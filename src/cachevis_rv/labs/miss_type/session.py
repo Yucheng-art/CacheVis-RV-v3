@@ -1,6 +1,8 @@
 """Synchronized actual/reference cache session for strict 3C classification."""
 
 from collections.abc import Iterable
+from types import MappingProxyType
+from typing import Mapping
 
 from cachevis_rv.core import CacheConfig, CacheSimulator
 
@@ -41,6 +43,16 @@ class MissTypeSession:
     def steps(self) -> tuple[MissTypeStep, ...]:
         """Return the completed steps as an immutable tuple."""
         return tuple(self._steps)
+
+    @property
+    def actual_config(self) -> CacheConfig:
+        """Return the immutable actual-cache configuration."""
+        return self.config
+
+    @property
+    def line_count(self) -> int:
+        """Return the common total line count of both caches."""
+        return self.config.cache_size_bytes // self.config.block_size_bytes
 
     @property
     def statistics(self) -> MissTypeStatistics:
@@ -109,6 +121,18 @@ class MissTypeSession:
             self.step()
         return self.steps
 
+    def get_actual_cache_snapshot(
+        self,
+    ) -> tuple[tuple[Mapping[str, object], ...], ...]:
+        """Return an immutable, detached snapshot of the actual cache."""
+        return self._freeze_snapshot(self.actual_simulator.get_cache_snapshot())
+
+    def get_reference_cache_snapshot(
+        self,
+    ) -> tuple[tuple[Mapping[str, object], ...], ...]:
+        """Return an immutable, detached snapshot of the reference cache."""
+        return self._freeze_snapshot(self.reference_simulator.get_cache_snapshot())
+
     def _next_statistics(
         self,
         actual_hit: bool,
@@ -161,6 +185,15 @@ class MissTypeSession:
                     f"address {address} exceeds the {address_bits}-bit address range"
                 )
         return values
+
+    @staticmethod
+    def _freeze_snapshot(
+        snapshot: list[list[dict[str, object]]],
+    ) -> tuple[tuple[Mapping[str, object], ...], ...]:
+        return tuple(
+            tuple(MappingProxyType(dict(line)) for line in cache_set)
+            for cache_set in snapshot
+        )
 
 
 __all__ = ["MissTypeSession"]

@@ -1,6 +1,16 @@
 """Public pure-Python API for strict 3C miss classification."""
 
+from .cache_view_model import (
+    CACHE_ROLES,
+    MissTypeCacheLineViewModel,
+    build_cache_line_models,
+)
 from .classifier import MissTypeClassifier
+from .controller import MissTypeController
+from .evidence_view_model import (
+    MissTypeEvidenceViewModel,
+    build_evidence_view_model,
+)
 from .model import (
     MissType,
     MissTypeEvidence,
@@ -14,6 +24,7 @@ from .presets import (
     MISS_TYPE_PRESETS,
     MissTypePreset,
 )
+from .page_state import EMPTY_PAGE_STATE, MissTypePageState
 from .session import MissTypeSession
 
 __all__ = [
@@ -23,6 +34,14 @@ __all__ = [
     "MissTypeStep",
     "MissTypeClassifier",
     "MissTypeSession",
+    "MissTypeController",
+    "MissTypePageState",
+    "EMPTY_PAGE_STATE",
+    "MissTypeCacheLineViewModel",
+    "build_cache_line_models",
+    "CACHE_ROLES",
+    "MissTypeEvidenceViewModel",
+    "build_evidence_view_model",
     "MissTypePreset",
     "COMPULSORY_PRESET",
     "CONFLICT_PRESET",
