@@ -18,8 +18,9 @@ from PySide6.QtWidgets import (
 
 from cachevis_rv.core import CacheConfig
 
-from .engine import VisualizerStepEngine
-from .model import AccessStepViewModel, CacheLineViewModel
+from .controller import AddressExplorerController
+from .model import AccessStepViewModel
+from .page_state import AddressExplorerPageState, CacheLines
 from .parser import parse_address_trace
 from .widgets.address_bit_bar import AddressBitBarWidget
 from .widgets.cache_contents import CacheContentsWidget
@@ -65,8 +66,7 @@ class AddressVisualizerWidget(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.engine: VisualizerStepEngine | None = None
-        self.last_step: AccessStepViewModel | None = None
+        self.controller = AddressExplorerController()
         self._info_labels: dict[str, QLabel] = {}
         self._build_ui()
 
@@ -242,8 +242,7 @@ class AddressVisualizerWidget(QWidget):
         self.block_size_combo.setCurrentText(preset["block_size"])
         self.ways_combo.setCurrentText(preset["ways"])
         self.policy_combo.setCurrentText(preset["policy"])
-        self.engine = None
-        self.last_step = None
+        self.controller.clear_session()
         if hasattr(self, "timeline_widget"):
             self.timeline_widget.clear()
             self.step_summary.clear()
@@ -256,66 +255,53 @@ class AddressVisualizerWidget(QWidget):
 
     def reset_visualizer(self) -> None:
         """Read settings, create a fresh engine, and display an empty cache."""
-        self.engine = None
-        self.last_step = None
+        self.controller.clear_session()
         try:
             config = self._read_config()
             addresses = parse_address_trace(self.address_input.toPlainText())
-            self.engine = VisualizerStepEngine(config, addresses)
+            state = self.controller.start_session(config, addresses)
         except Exception as exc:
             QMessageBox.warning(self, "Address Visualizer Error", str(exc))
             return
 
-        self.timeline_widget.clear()
-        self.step_summary.clear()
-        self._clear_current_address()
-        self._clear_address_segments()
+        self._render_state(state)
         self.explanation_panel.show_placeholder("Ready. Click Step to access the first address.")
-        self._update_cache_table(
-            _snapshot_to_line_models(self.engine.simulator.get_cache_snapshot()),
-            mapped_set=None,
-            hit_way=None,
-            victim_way=None,
-            replacement_reason=None,
-        )
 
     def step_once(self) -> None:
         """Execute one access and update all visualizer panels."""
-        if self.engine is None:
+        if not self.controller.state.has_session:
             self.reset_visualizer()
-            if self.engine is None:
+            if not self.controller.state.has_session:
                 return
 
-        if not self.engine.has_next():
+        if self.controller.state.is_complete:
             QMessageBox.information(self, "Address Visualizer", "All addresses are complete.")
             return
 
         try:
-            step = self.engine.step()
+            state = self.controller.step()
         except Exception as exc:
             QMessageBox.warning(self, "Address Visualizer Error", str(exc))
             return
-        self._display_step(step)
+        self._render_state(state)
 
     def run_all(self) -> None:
         """Run the remaining trace immediately and show the final state."""
-        if self.engine is None:
+        if not self.controller.state.has_session:
             self.reset_visualizer()
-            if self.engine is None:
+            if not self.controller.state.has_session:
                 return
 
-        ran_any = False
-        while self.engine.has_next():
-            try:
-                step = self.engine.step()
-            except Exception as exc:
-                QMessageBox.warning(self, "Address Visualizer Error", str(exc))
-                return
-            self._display_step(step)
-            ran_any = True
-
-        if not ran_any:
+        if self.controller.state.is_complete:
             QMessageBox.information(self, "Address Visualizer", "All addresses are complete.")
+            return
+
+        try:
+            state = self.controller.run_all()
+        except Exception as exc:
+            QMessageBox.warning(self, "Address Visualizer Error", str(exc))
+            return
+        self._render_state(state)
 
     def _read_config(self) -> CacheConfig:
         return CacheConfig(
@@ -325,25 +311,43 @@ class AddressVisualizerWidget(QWidget):
             replacement_policy=self.policy_combo.currentText(),
         )
 
-    def _display_step(self, step: AccessStepViewModel) -> None:
-        self.last_step = step
-        self._update_current_address(step)
-        self._update_address_segments(step)
+    def _render_state(self, state: AddressExplorerPageState) -> None:
+        """Render one controller state without owning session behavior."""
+        self.timeline_widget.clear()
+        for timeline_step in state.timeline_steps:
+            self.timeline_widget.add_step(timeline_step)
+
+        step = state.current_step
+        if step is None:
+            self._clear_current_address()
+            self._clear_address_segments()
+            self.step_summary.clear()
+            self.explanation_panel.show_placeholder(
+                "Ready. Click Step to access the first address."
+            )
+        else:
+            self._update_current_address(step)
+            self._update_address_segments(step)
+            self.explanation_panel.set_step(step)
+
+        selected_step = state.selected_step
+        if selected_step is not None:
+            self.step_summary.set_step(selected_step)
+
         self._update_cache_table(
-            step.after_cache_snapshot,
-            mapped_set=step.mapped_set,
-            hit_way=step.hit_way,
-            victim_way=step.victim_way,
-            replacement_reason=step.replacement_reason,
+            state.cache_lines,
+            mapped_set=step.mapped_set if step is not None else None,
+            hit_way=step.hit_way if step is not None else None,
+            victim_way=step.victim_way if step is not None else None,
+            replacement_reason=(
+                step.replacement_reason if step is not None else None
+            ),
         )
-        self.explanation_panel.set_step(step)
-        self.timeline_widget.add_step(step)
-        self.step_summary.set_step(step)
 
     def _show_step_summary_for_step(self, step_index: int) -> None:
-        step = self.timeline_widget.get_step(step_index)
-        if step is not None:
-            self.step_summary.set_step(step)
+        state = self.controller.select_step(step_index)
+        if state.selected_step is not None:
+            self.step_summary.set_step(state.selected_step)
 
     def _update_current_address(self, step: AccessStepViewModel) -> None:
         values = {
@@ -382,7 +386,7 @@ class AddressVisualizerWidget(QWidget):
 
     def _update_cache_table(
         self,
-        snapshot: list[list[CacheLineViewModel]],
+        snapshot: CacheLines,
         *,
         mapped_set: int | None,
         hit_way: int | None,
@@ -396,20 +400,3 @@ class AddressVisualizerWidget(QWidget):
             victim_way=victim_way,
             replacement_reason=replacement_reason,
         )
-
-def _snapshot_to_line_models(snapshot: list[list[dict]]) -> list[list[CacheLineViewModel]]:
-    return [
-        [
-            CacheLineViewModel(
-                set_index=int(line["set_index"]),
-                way_index=int(line["way"]),
-                valid=bool(line["valid"]),
-                tag=line["tag"],
-                dirty=bool(line["dirty"]),
-                last_used=int(line["last_used"]),
-                insert_time=int(line["insert_time"]),
-            )
-            for line in cache_set
-        ]
-        for cache_set in snapshot
-    ]

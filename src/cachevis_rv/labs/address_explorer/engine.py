@@ -28,6 +28,20 @@ class VisualizerStepEngine:
         """Return whether another address can be stepped."""
         return self.current_step < len(self.addresses)
 
+    @property
+    def is_complete(self) -> bool:
+        """Return whether every address in the trace has been executed."""
+        return not self.has_next()
+
+    @property
+    def next_step_index(self) -> int | None:
+        """Return the next trace index, or ``None`` when the trace is complete."""
+        return self.current_step if self.has_next() else None
+
+    def get_cache_line_models(self) -> list[list[CacheLineViewModel]]:
+        """Return the current cache contents as visualizer line models."""
+        return _snapshot_to_line_models(self.simulator.get_cache_snapshot())
+
     def step(self) -> AccessStepViewModel:
         """Execute one address access and return all data needed by the GUI."""
         if not self.has_next():
@@ -44,7 +58,7 @@ class VisualizerStepEngine:
         access_result = self.simulator.access(address)
         self._seen_memory_blocks.add(memory_block)
 
-        after_snapshot = _snapshot_to_line_models(self.simulator.get_cache_snapshot())
+        after_snapshot = self.get_cache_line_models()
         stats = self.simulator.get_statistics()
         hit = bool(access_result["hit"])
         hit_way = access_result["victim_way"] if hit else None
