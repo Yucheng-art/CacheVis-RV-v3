@@ -1,0 +1,14 @@
+Cache*.pdf
+.venv/
+.wheelhouse/
+.codex-python/
+**pycache**/
+*.pyc
+build/
+dist/
+outputs/
+.pytest_cache/
+.coverage
+htmlcov/
+.idea/
+.vscode/
