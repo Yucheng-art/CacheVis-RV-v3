@@ -15,6 +15,14 @@ SECTION_STYLES = {
     "normal": ("#ffffff", "#bbbbbb"),
 }
 
+SECTION_TEXT_COLORS = {
+    "hit": "#14532d",
+    "miss": "#7f1d1d",
+    "replacement": "#5c4500",
+    "warning": "#5c4500",
+    "normal": "#1f2937",
+}
+
 
 class ExplanationPanelWidget(QGroupBox):
     """Displays explanation text as titled sections."""
@@ -97,10 +105,12 @@ def _build_section_card(section: ExplanationSection) -> QFrame:
 
 def _section_style(status: str) -> str:
     bg, border = SECTION_STYLES.get(status, SECTION_STYLES["normal"])
+    text = SECTION_TEXT_COLORS.get(status, SECTION_TEXT_COLORS["normal"])
     return (
         "QFrame {"
         f"background-color: {bg};"
         f"border: 2px solid {border};"
         "border-radius: 6px;"
+        f"color: {text};"
         "}"
     )

@@ -12,6 +12,12 @@ SEGMENT_STYLES = {
     "Offset": ("#d7e8ff", "#1f4f8f"),
 }
 
+SEGMENT_TEXT_COLORS = {
+    "Tag": "#6b1f1f",
+    "Index": "#14532d",
+    "Offset": "#173f73",
+}
+
 
 class AddressBitBarWidget(QWidget):
     """Responsive colored bit bar for Tag / Index / Offset display."""
@@ -112,11 +118,13 @@ class AddressBitBarWidget(QWidget):
         )
 
         bg, border = SEGMENT_STYLES[segment.name]
+        text = SEGMENT_TEXT_COLORS[segment.name]
         self._segment_frames[segment.name].setStyleSheet(
             "QFrame {"
             f"background-color: {bg};"
             f"border: 2px solid {border};"
             "border-radius: 6px;"
+            f"color: {text};"
             "}"
         )
 

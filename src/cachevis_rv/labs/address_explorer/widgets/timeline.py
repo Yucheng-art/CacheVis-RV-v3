@@ -18,6 +18,17 @@ CHIP_STYLES = {
     "miss_current_selected": ("#ffe0e0", "#111827"),
 }
 
+CHIP_TEXT_COLORS = {
+    "hit": "#14532d",
+    "miss": "#7f1d1d",
+    "hit_current": "#14532d",
+    "miss_current": "#7f1d1d",
+    "hit_selected": "#14532d",
+    "miss_selected": "#7f1d1d",
+    "hit_current_selected": "#14532d",
+    "miss_current_selected": "#7f1d1d",
+}
+
 
 class AccessTimelineWidget(QGroupBox):
     """Scrollable row of access chips."""
@@ -154,11 +165,13 @@ def _chip_style(item: TimelineItemViewModel) -> str:
     elif item.is_selected:
         role = f"{role}_selected"
     bg, border = CHIP_STYLES.get(role, CHIP_STYLES["miss"])
+    text = CHIP_TEXT_COLORS.get(role, CHIP_TEXT_COLORS["miss"])
     border_width = 3 if item.is_current or item.is_selected else 2
     return (
         "QFrame {"
         f"background-color: {bg};"
         f"border: {border_width}px solid {border};"
         "border-radius: 6px;"
+        f"color: {text};"
         "}"
     )

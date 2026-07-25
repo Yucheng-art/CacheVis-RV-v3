@@ -19,6 +19,15 @@ CARD_STYLES = {
     "normal": ("#ffffff", "#bbbbbb"),
 }
 
+CARD_TEXT_COLORS = {
+    "hit": "#14532d",
+    "invalid_fill": "#5c4500",
+    "victim": "#713600",
+    "current_set": "#173f73",
+    "empty": "#4b5563",
+    "normal": "#1f2937",
+}
+
 
 class CacheContentsWidget(QWidget):
     """Scrollable set/way card view for cache contents."""
@@ -158,16 +167,24 @@ def _build_way_card(card: CacheLineCardViewModel) -> QFrame:
 
 def _card_style(role: str) -> str:
     bg, border = CARD_STYLES.get(role, CARD_STYLES["normal"])
+    text = CARD_TEXT_COLORS.get(role, CARD_TEXT_COLORS["normal"])
     return (
         "QFrame {"
         f"background-color: {bg};"
         f"border: 2px solid {border};"
         "border-radius: 6px;"
+        f"color: {text};"
         "}"
     )
 
 
 def _row_style(is_current: bool) -> str:
     if is_current:
-        return "QFrame { background-color: #f2f7ff; border: 2px solid #2d63ad; }"
-    return "QFrame { background-color: #ffffff; border: 1px solid #cccccc; }"
+        return (
+            "QFrame { background-color: #f2f7ff; border: 2px solid #2d63ad; "
+            "color: #173f73; }"
+        )
+    return (
+        "QFrame { background-color: #ffffff; border: 1px solid #cccccc; "
+        "color: #1f2937; }"
+    )
