@@ -8,6 +8,8 @@ from .runner import (
     make_single_experiment_conclusion,
     run_single_experiment,
 )
+from .controller import SingleExperimentController
+from .view_model import SingleExperimentViewModel
 
 __all__ = [
     "SOFTWARE_NAME",
@@ -16,4 +18,15 @@ __all__ = [
     "build_trace",
     "run_single_experiment",
     "make_single_experiment_conclusion",
+    "SingleExperimentController",
+    "SingleExperimentViewModel",
+    "SingleExperimentWidget",
 ]
+
+
+def __getattr__(name: str):
+    if name == "SingleExperimentWidget":
+        from .widget import SingleExperimentWidget
+
+        return SingleExperimentWidget
+    raise AttributeError(name)
