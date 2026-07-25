@@ -30,6 +30,12 @@ def _create_address_explorer():
     return AddressVisualizerWidget()
 
 
+def _create_miss_type():
+    from cachevis_rv.labs.miss_type.widget import MissTypeLabWidget
+
+    return MissTypeLabWidget()
+
+
 def _create_single_experiment():
     from cachevis_rv.labs.single_experiment import SingleExperimentWidget
 
@@ -60,9 +66,9 @@ LAB_REGISTRY = (
         short_title="Miss Types",
         description="Explore compulsory, conflict, and capacity misses with guided traces.",
         category="Learn",
-        status=COMING_SOON,
+        status=AVAILABLE,
         concepts=("3C model", "Miss classification"),
-        factory=None,
+        factory=_create_miss_type,
         order=20,
     ),
     LabDefinition(

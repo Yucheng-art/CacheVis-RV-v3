@@ -109,6 +109,26 @@ class MissTypeSession:
             miss_type=miss_type,
             evidence=evidence,
             statistics=statistics,
+            actual_set_index=int(actual_access["index"]),
+            actual_hit_way=(
+                int(actual_access["victim_way"]) if actual_hit else None
+            ),
+            actual_victim_way=(
+                None if actual_hit else int(actual_access["victim_way"])
+            ),
+            reference_set_index=int(reference_access["index"]),
+            reference_hit_way=(
+                int(reference_access["victim_way"]) if reference_hit else None
+            ),
+            reference_victim_way=(
+                None if reference_hit else int(reference_access["victim_way"])
+            ),
+            actual_invalid_fill=(
+                not actual_hit and not bool(actual_access["replaced_valid"])
+            ),
+            reference_invalid_fill=(
+                not reference_hit and not bool(reference_access["replaced_valid"])
+            ),
         )
         self._steps.append(result)
         self._next_step_index += 1

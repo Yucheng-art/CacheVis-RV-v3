@@ -33,10 +33,10 @@ class HomePageMetadataTest(unittest.TestCase):
         statuses = {lab.lab_id: lab.status for lab in get_labs()}
 
         self.assertEqual(statuses["address_explorer"], AVAILABLE)
+        self.assertEqual(statuses["miss_type"], AVAILABLE)
         self.assertEqual(statuses["single_experiment"], AVAILABLE)
         self.assertEqual(statuses["compare_experiment"], AVAILABLE)
         for lab_id in (
-            "miss_type",
             "locality",
             "policy",
             "performance",

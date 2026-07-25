@@ -117,10 +117,12 @@ class MissTypeController:
             actual_cache_lines=build_cache_line_models(
                 session.get_actual_cache_snapshot(),
                 "actual",
+                current_step,
             ),
             reference_cache_lines=build_cache_line_models(
                 session.get_reference_cache_snapshot(),
                 "reference",
+                current_step,
             ),
             statistics=session.statistics,
             selected_evidence=(

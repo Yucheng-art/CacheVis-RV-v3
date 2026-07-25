@@ -8,7 +8,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from cachevis_rv.gui.lab_registry import COMING_SOON, get_lab
+from cachevis_rv.gui.lab_registry import AVAILABLE, get_lab
 from cachevis_rv.labs.miss_type import (
     CONFLICT_PRESET,
     EMPTY_PAGE_STATE,
@@ -124,11 +124,11 @@ class MissTypePageStateTest(unittest.TestCase):
         self.assertNotIn("reference_simulator", source)
         self.assertNotIn(".classifier", source)
 
-    def test_registry_remains_coming_soon_without_factory(self):
+    def test_registry_publishes_available_lazy_factory(self):
         lab = get_lab("miss_type")
 
-        self.assertEqual(lab.status, COMING_SOON)
-        self.assertIsNone(lab.factory)
+        self.assertEqual(lab.status, AVAILABLE)
+        self.assertTrue(callable(lab.factory))
 
 
 if __name__ == "__main__":

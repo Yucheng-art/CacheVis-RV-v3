@@ -83,6 +83,14 @@ class MissTypeStep:
     miss_type: MissType | None
     evidence: MissTypeEvidence
     statistics: MissTypeStatistics
+    actual_set_index: int | None = None
+    actual_hit_way: int | None = None
+    actual_victim_way: int | None = None
+    reference_set_index: int | None = None
+    reference_hit_way: int | None = None
+    reference_victim_way: int | None = None
+    actual_invalid_fill: bool = False
+    reference_invalid_fill: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.step_index, int) or self.step_index < 0:

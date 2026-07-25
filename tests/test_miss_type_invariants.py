@@ -8,7 +8,7 @@ import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 from cachevis_rv.core import CacheConfig
-from cachevis_rv.gui.lab_registry import COMING_SOON, get_lab
+from cachevis_rv.gui.lab_registry import AVAILABLE, get_lab
 from cachevis_rv.labs.address_explorer.engine import VisualizerStepEngine
 from cachevis_rv.labs.miss_type import MissType, MissTypeSession
 
@@ -115,12 +115,12 @@ class MissTypeInvariantsTest(unittest.TestCase):
 
         self.assertEqual(miss_types, ("compulsory", "compulsory", "unknown"))
 
-    def test_registry_keeps_miss_type_coming_soon_without_factory(self):
+    def test_registry_exposes_available_miss_type_lazy_factory(self):
         lab = get_lab("miss_type")
 
         self.assertIsNotNone(lab)
-        self.assertEqual(lab.status, COMING_SOON)
-        self.assertIsNone(lab.factory)
+        self.assertEqual(lab.status, AVAILABLE)
+        self.assertTrue(callable(lab.factory))
 
 
 if __name__ == "__main__":
