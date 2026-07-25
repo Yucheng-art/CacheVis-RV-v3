@@ -2,28 +2,54 @@
 
 ## 产品定位
 
-CacheVis-RV V3 规划为面向计算机组成与 RISC-V Cache 教学的多实验室交互式可视化平台。它将以独立 Lab 组织教学主题，使学习者能够围绕地址、缓存结构和访问过程开展分步观察与实验。
+CacheVis-RV V3 是面向计算机组成与 RISC-V Cache 教学的多实验室交互式可视化平台。它以独立 Lab 组织教学主题，使学习者能够围绕地址、缓存结构和访问过程开展分步观察与实验。
 
-当前仓库仅完成初始化；本文描述目标与约束，不表示相关功能已经实现。
+## 当前平台结构
 
-## 产品原则
+平台外壳由以下组件组成：
 
-- 教学优先：每个 Lab 聚焦明确的学习目标。
-- 渐进呈现：从概念、输入与状态变化逐步过渡到完整交互。
-- 可解释：关键计算与状态转换应能被观察和追踪。
-- 相互隔离：不同 Lab 可独立演进、测试和维护。
-- 稳定继承：从 V2 提炼已验证的行为，不直接搬运实现。
+- Sidebar：只展示 Home、可用学习 Lab 和 Classic Tools。
+- Home：展示八个 Lab 的教学元数据、状态与入口。
+- Lab Registry：集中维护 Lab 身份、分类、状态、顺序和惰性 factory。
+- `QStackedWidget`：承载 Home 与 Lab 页面。
 
-## 目标架构
+可用页面采用 lazy initialization：首次导航时通过 Registry factory 创建，此后缓存并复用，切换页面不会丢失状态。Coming Soon 页面没有 factory，不能被导航或实例化。
 
-V3 继续采用 Python、PySide6 和 `unittest`。每个 Lab 规划为三个主要层次：
+## Lab 状态
 
-1. 纯逻辑：领域模型、计算规则与状态转换，不依赖 GUI。
-2. Controller 与 view model：连接用户意图、领域逻辑和展示状态。
-3. Widget：负责 PySide6 界面与交互呈现。
+已实现并可用：
 
-平台层负责 Lab 注册、导航、共享样式和必要的公共服务。不得把多个 Lab 的业务逻辑堆积在单一 Widget 中。
+- Address Explorer
+- Single Experiment
+- Compare Experiment
 
-## 初始范围
+仍为 Coming Soon：
 
-项目初始化阶段只建立文档、协作规则和版本控制基础。Lab 清单、交互细节、数据模型和界面布局将在后续阶段按决策记录逐项确定。
+- Miss Type Lab
+- Locality Lab
+- Policy Lab
+- Performance Lab
+- Write Policy Lab
+
+Coming Soon 仅表示规划状态，不代表已有业务实现。
+
+## 分层架构
+
+V3 继续采用 Python、PySide6 和 `unittest`。当前代码按以下边界组织：
+
+1. `cachevis_rv.core`：Cache 配置、行、模拟器、替换策略和统计。
+2. 实验服务包：trace、runner 与 report 等可复用纯逻辑服务。
+3. 独立 Lab：Address Explorer、Single Experiment、Compare Experiment 分别拥有自己的逻辑、controller/view model 与 widget 边界。
+4. `cachevis_rv.gui`：只负责平台导航、Home、Registry、窗口协调与平台样式。
+
+平台层不得承载 Lab 业务逻辑；不同 Lab 不得堆积在单一 Widget 中。共享能力通过明确、稳定的公共接口提供。
+
+## M0 质量基线
+
+- V2 稳定运行时行为保持兼容。
+- 169 项 `unittest` 全部通过。
+- CLI 单实验与 Compare smoke 已通过。
+- GUI 入口、页面懒加载、页面缓存与 V3.0 应用身份已验证。
+- Address Explorer 语义色区域具有明确的高对比度文字。
+
+下一阶段为 M1 Miss Type Lab，仍按“纯逻辑 → `unittest` → GUI”的顺序推进。

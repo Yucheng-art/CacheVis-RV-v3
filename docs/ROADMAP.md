@@ -1,31 +1,38 @@
 # 路线图
 
-## 阶段 0：项目初始化
+## M0：V3 稳定平台基线（已完成）
 
-- 建立独立 V3 仓库。
-- 建立协作约束、架构说明、交接上下文、继承计划和决策记录。
-- 不开发业务功能。
+- 导入 V2 稳定运行时基线。
+- 提取 `cachevis_rv.core` 核心 package，并保留扁平兼容 facade。
+- 提取实验服务 packages。
+- 提取 Address Explorer package 与 controller。
+- 将 Single Experiment 和 Compare Experiment 独立为 Classic Labs。
+- 建立 Sidebar、Home、Lab Registry 与 `QStackedWidget` 平台外壳。
+- 实现可用页面的 lazy initialization 与状态缓存。
+- 完成 V3.0 应用身份和 Address Explorer 视觉可读性修正。
+- 建立 169 项测试的 M0 回归基线。
 
-## 阶段 1：范围与接口设计
+## M1：Miss Type Lab
 
-- 只读分析 V2 的稳定行为。
-- 确定首批 Lab、学习目标和验收标准。
-- 定义平台层与 Lab 的边界及公共接口。
+1. M1.1：实现纯 Python 的严格 3C Miss 分类核心及测试。
+2. 后续阶段：定义 controller、view model 和教学交互。
+3. 最后接入独立 Miss Type Widget 与平台导航。
 
-## 阶段 2：纯逻辑与测试
+在 GUI 阶段完成前，Miss Type Lab 必须保持 Coming Soon，且不得配置 widget factory。
 
-- 按 Lab 实现独立领域逻辑。
-- 使用 `unittest` 覆盖关键规则、边界条件和状态转换。
-- 保持逻辑层不依赖 PySide6。
+## 后续 Lab
 
-## 阶段 3：GUI 集成
+- Locality Lab
+- Policy Lab
+- Performance Lab
+- Write Policy Lab
 
-- 为每个 Lab 建立独立 controller、view model 和 widget。
-- 接入平台导航与共享视觉规范。
-- 验证教学流程、交互反馈和可访问性。
+上述 Lab 当前均为规划项，尚未实现。
 
-## 阶段 4：质量与发布准备
+## 持续质量要求
 
-- 完成回归测试、文档和打包检查。
-- 排除环境目录、缓存、PDF 和构建产物。
-- 依据明确的发布决策创建版本；本阶段规划不代表已授权创建 tag 或发布。
+- 每个 Lab 独立分层和测试。
+- 纯逻辑不得依赖 PySide6。
+- 保持 V1/V2 只读。
+- 排除环境目录、缓存、`Cache*.pdf`、`outputs`、`build` 和 `dist`。
+- 发布、tag 和远程操作必须获得明确许可。
