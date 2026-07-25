@@ -12,22 +12,36 @@
 - 完成 V3.0 应用身份和 Address Explorer 视觉可读性修正。
 - 建立 169 项测试的 M0 回归基线。
 
-## M1：Miss Type Lab
+## M1：Miss Type Lab（已完成）
 
 1. M1.1：实现纯 Python 的严格 3C Miss 分类核心及测试。
-2. 后续阶段：定义 controller、view model 和教学交互。
-3. 最后接入独立 Miss Type Widget 与平台导航。
+2. M1.2：实现 controller、Page State、Cache 与 Evidence view model。
+3. M1.3：实现独立 Miss Type Widget，并接入 Home、Sidebar、Registry 和 Main Window 页面缓存。
 
-在 GUI 阶段完成前，Miss Type Lab 必须保持 Coming Soon，且不得配置 widget factory。
+- 分类单位为 memory block。
+- Reference Cache 使用同容量、同 block size、fully associative、LRU 配置。
+- Actual Cache 在基础 3C Lab 中固定使用 LRU。
+- 页面展示 Actual/Reference Cache、Evidence、Statistics 和 Timeline。
+- 历史 Timeline 选择不回滚 Cache 或累计 Statistics。
+- 三个内置 preset 结果为 C C C C、C C F F、C C C A。
+- Miss Type Lab 当前状态为 Available。
+- M1 完成时回归基线为 270 项测试。
+
+## M2：Locality Lab（下一阶段）
+
+- 先定义 temporal locality 与 spatial locality 的纯逻辑教学模型。
+- 再建立 `unittest` 验证。
+- 最后设计独立 controller、view model 和 widget，并接入平台。
 
 ## 后续 Lab
 
-- Locality Lab
 - Policy Lab
 - Performance Lab
 - Write Policy Lab
 
 上述 Lab 当前均为规划项，尚未实现。
+
+M2 Locality Lab 也尚未实现；本路线图仅记录下一阶段方向。
 
 ## 持续质量要求
 

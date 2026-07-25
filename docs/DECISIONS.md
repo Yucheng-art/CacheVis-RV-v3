@@ -53,3 +53,21 @@
 - 状态：已决定
 - 决策：M1 首先实现不依赖 PySide6 的 3C Miss 分类核心和测试，在 GUI 完成前 Registry 中继续保持 Coming Soon。
 - 原因：先固定教学定义与分类不变量，再设计展示和交互。
+
+## D-010：基础 3C 分类使用 memory block 与 fully associative LRU reference
+
+- 状态：已决定
+- 决策：Miss Type Lab 以 memory block 为 seen-before 和分类单位；Reference Cache 与 Actual Cache 容量、block size 相同，采用 fully associative、单 set、LRU 配置。Actual Cache 在该 Lab 中固定使用 LRU。
+- 原因：排除 block offset 和替换策略差异的干扰，使 compulsory、conflict、capacity 的分类符合严格基础 3C 定义。
+
+## D-011：历史 Timeline 选择不回滚 Cache 与累计统计
+
+- 状态：已决定
+- 决策：选择历史 Timeline step 只更新 Selected Evidence；Current Access、Actual Cache、Reference Cache 与累计 Statistics 保持最新执行状态。
+- 原因：当前实现不保存每一步的完整 Cache snapshot，明确区分“查看历史证据”和“回滚模拟状态”，避免界面暗示尚未实现的历史回放能力。
+
+## D-012：Miss Type Lab 通过 Registry 成为可用 Lab
+
+- 状态：已决定
+- 决策：M1.3 完成后，Miss Type Lab 状态改为 Available，由 Registry factory 延迟创建并由 Main Window 缓存；Home 与 Sidebar 继续完全由 Registry 元数据驱动。
+- 原因：复用既有平台扩展机制，不在 Main Window 中加入 Miss Type 专用分支，并确保页面切换后实验状态保持。
