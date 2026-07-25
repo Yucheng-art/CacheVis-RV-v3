@@ -1,6 +1,6 @@
-"""Compatibility facade for packaged experiment reporting services."""
+"""Public experiment reporting services."""
 
-from cachevis_rv.services.report_exporter import (
+from .report_exporter import (
     ACCESS_LOG_FIELDS,
     COMPARISON_FIELDS,
     build_comparison_conclusion,

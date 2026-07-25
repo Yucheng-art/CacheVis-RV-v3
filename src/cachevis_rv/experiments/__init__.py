@@ -1,6 +1,6 @@
-"""Compatibility facade for packaged address trace generators."""
+"""Public address trace generators."""
 
-from cachevis_rv.experiments.trace_generator import (
+from .trace_generator import (
     generate_block_locality_trace,
     generate_conflict_trace,
     generate_loop_reuse_trace,

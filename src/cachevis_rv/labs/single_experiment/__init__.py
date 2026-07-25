@@ -1,6 +1,6 @@
-"""Compatibility facade for the packaged single-experiment runner."""
+"""Public single-experiment runner API."""
 
-from cachevis_rv.labs.single_experiment.runner import (
+from .runner import (
     DEFAULT_START_ADDRESS,
     SOFTWARE_NAME,
     SOFTWARE_VERSION,
