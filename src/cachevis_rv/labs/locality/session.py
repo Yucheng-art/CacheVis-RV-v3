@@ -1,6 +1,8 @@
 """Synchronized cache execution and independent locality analysis."""
 
 from collections.abc import Iterable
+from types import MappingProxyType
+from typing import Mapping
 
 from cachevis_rv.core import CacheConfig, CacheSimulator
 
@@ -32,6 +34,11 @@ class LocalitySession:
     @property
     def statistics(self) -> LocalityStatistics:
         return self._statistics
+
+    @property
+    def line_count(self) -> int:
+        """Return the total number of cache lines."""
+        return self.config.cache_size_bytes // self.config.block_size_bytes
 
     @property
     def is_complete(self) -> bool:
@@ -80,6 +87,16 @@ class LocalitySession:
             locality_kind=locality_kind,
             evidence=evidence,
             statistics=statistics,
+            set_index=int(cache_access["index"]),
+            hit_way=(
+                int(cache_access["victim_way"]) if cache_hit else None
+            ),
+            victim_way=(
+                None if cache_hit else int(cache_access["victim_way"])
+            ),
+            invalid_fill=(
+                not cache_hit and not bool(cache_access["replaced_valid"])
+            ),
         )
         self._steps.append(result)
         self._next_step_index += 1
@@ -90,6 +107,15 @@ class LocalitySession:
         while self.has_next():
             self.step()
         return self.steps
+
+    def get_cache_snapshot(
+        self,
+    ) -> tuple[tuple[Mapping[str, object], ...], ...]:
+        """Return an immutable, detached snapshot of the cache."""
+        return tuple(
+            tuple(MappingProxyType(dict(line)) for line in cache_set)
+            for cache_set in self.cache_simulator.get_cache_snapshot()
+        )
 
     def _next_statistics(
         self,

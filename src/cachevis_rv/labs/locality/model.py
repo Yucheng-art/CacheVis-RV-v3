@@ -132,6 +132,10 @@ class LocalityStep:
     locality_kind: LocalityKind
     evidence: LocalityEvidence
     statistics: LocalityStatistics
+    set_index: int | None = None
+    hit_way: int | None = None
+    victim_way: int | None = None
+    invalid_fill: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.step_index, int) or self.step_index < 0:
@@ -148,6 +152,34 @@ class LocalityStep:
             raise ValueError("cache_hit and cache_result disagree")
         if not isinstance(self.locality_kind, LocalityKind):
             raise TypeError("locality_kind must be a LocalityKind")
+        for name, value in (
+            ("set_index", self.set_index),
+            ("hit_way", self.hit_way),
+            ("victim_way", self.victim_way),
+        ):
+            if value is not None and (
+                not isinstance(value, int) or isinstance(value, bool) or value < 0
+            ):
+                raise ValueError(f"{name} must be a non-negative integer or None")
+        marker_data_present = (
+            self.set_index is not None
+            or self.hit_way is not None
+            or self.victim_way is not None
+            or self.invalid_fill
+        )
+        if marker_data_present:
+            if self.set_index is None:
+                raise ValueError("cache marker data requires set_index")
+            if self.cache_hit and self.hit_way is None:
+                raise ValueError("a cache hit requires hit_way")
+            if self.cache_hit and self.victim_way is not None:
+                raise ValueError("a cache hit must not have victim_way")
+            if not self.cache_hit and self.victim_way is None:
+                raise ValueError("a cache miss requires victim_way")
+            if not self.cache_hit and self.hit_way is not None:
+                raise ValueError("a cache miss must not have hit_way")
+            if self.invalid_fill and self.cache_hit:
+                raise ValueError("invalid_fill applies only to cache misses")
 
     @property
     def address_hex(self) -> str:
