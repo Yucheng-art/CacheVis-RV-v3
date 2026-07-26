@@ -125,3 +125,27 @@
 - 状态：已决定
 - 决策：M3.3 完成后 Policy Lab 状态改为 Available，由 Registry factory 延迟创建并由 Main Window 通用 page cache 复用；Home 与 Sidebar 继续由 Registry 元数据驱动。
 - 原因：保持平台扩展机制一致，不在 Main Window 中加入 Policy 专用分支，并确保页面切换后实验状态保持。
+
+## D-022：Performance 使用显式教学时序而非 wall-clock
+
+- 状态：已决定
+- 决策：Performance Lab 的 cycle、AMAT 和 speedup 全部由用户可见的 hit time、fixed miss overhead 与 transfer cycles/byte 计算；不得使用宿主机 Python wall-clock benchmark 代表 Cache 性能。
+- 原因：wall-clock 会混入解释器、操作系统与机器差异，不能稳定表达硬件教学模型。
+
+## D-023：Performance sweep 每个 point 从冷 Cache 独立运行
+
+- 状态：已决定
+- 决策：每个 sweep point 使用正式 `PerformanceRunner` 从空 Cache 开始；支持 LRU/FIFO，Random 明确拒绝并归入 Policy Lab。选择 point 或 chart metric 只重建 view state，不重新运行 sweep。
+- 原因：避免前一个 point 污染后一个 point，并保证比较、tie 和 selection 语义稳定可测试。
+
+## D-024：单级 sweep 与 analytical L1/L2 相互独立
+
+- 状态：已决定
+- 决策：Run/Clear Sweep 不清除 hierarchy；Analyze/Clear Hierarchy 不清除 sweep。L1/L2 当前只计算概率和 expected-cycle contributions，不创建第二级 CacheSimulator。
+- 原因：明确区分基于实际单级 Cache trace 的 sweep 与尚无实际 L2 contents 的 analytical timing model。
+
+## D-025：Performance Lab 通过 Registry 成为可用 Lab
+
+- 状态：已决定
+- 决策：M4.3 完成后 Performance Lab 状态改为 Available，由 Registry factory 延迟创建并由 Main Window 通用 page cache 复用；Write Policy 继续为 Coming Soon 且 `factory=None`。
+- 原因：保持平台扩展与状态缓存机制一致，不向 Main Window 添加 Performance 专用分支。

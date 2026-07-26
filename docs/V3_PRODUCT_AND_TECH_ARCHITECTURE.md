@@ -23,12 +23,12 @@ CacheVis-RV V3 是面向计算机组成与 RISC-V Cache 教学的多实验室交
 - Miss Type Lab
 - Locality Lab
 - Policy Lab
+- Performance Lab
 - Single Experiment
 - Compare Experiment
 
 仍为 Coming Soon：
 
-- Performance Lab
 - Write Policy Lab
 
 Coming Soon 仅表示规划状态，不代表已有业务实现。
@@ -39,7 +39,7 @@ V3 继续采用 Python、PySide6 和 `unittest`。当前代码按以下边界组
 
 1. `cachevis_rv.core`：Cache 配置、行、模拟器、替换策略和统计。
 2. 实验服务包：trace、runner 与 report 等可复用纯逻辑服务。
-3. 独立 Lab：Address Explorer、Miss Type Lab、Locality Lab、Policy Lab、Single Experiment、Compare Experiment 分别拥有自己的逻辑、controller/view model 与 widget 边界。
+3. 独立 Lab：Address Explorer、Miss Type Lab、Locality Lab、Policy Lab、Performance Lab、Single Experiment、Compare Experiment 分别拥有自己的逻辑、controller/view model 与 widget 边界。
 4. `cachevis_rv.gui`：只负责平台导航、Home、Registry、窗口协调与平台样式。
 
 平台层不得承载 Lab 业务逻辑；不同 Lab 不得堆积在单一 Widget 中。共享能力通过明确、稳定的公共接口提供。
@@ -152,12 +152,46 @@ Same address
 
 每条 lane 持续验证 `Hits + Misses = Accesses` 和 `Invalid Fills + Evictions = Misses`；比较层验证 `All Agree + Outcome Divergence = Accesses`。current trace leader 只描述当前有限 trace，不代表策略普遍最优。
 
+## M4 Performance Lab
+
+Performance Lab 已通过 Registry 接入 Home 与 Sidebar，并复用 Main Window 的 lazy page cache。它研究显式 timing assumptions 下的教学性能模型，不测量宿主机 Python wall-clock 时间。
+
+单级模型为：
+
+```text
+effective_miss_penalty = fixed_miss_overhead + block_size × transfer_cycles_per_byte
+lookup_cycles = accesses × hit_time
+miss_penalty_cycles = misses × effective_miss_penalty
+total_cycles = lookup_cycles + miss_penalty_cycles
+AMAT = total_cycles / accesses
+     = hit_time + miss_rate × effective_miss_penalty
+```
+
+每次 access 都支付 hit time；只有 miss 支付额外 penalty，且 penalty 不重复包含 hit time。Traffic 使用 `line_fills = misses` 与 `bytes_fetched = misses × block_size`，当前不计算 write-back traffic。空 trace 的 AMAT、bytes/access、stall fraction 和 speedup 显示 N/A，不产生 NaN 或 infinity。
+
+六个正式 sweep 为 Capacity Knee、Sequential Block Benefit、Stride Block Cost、Associativity Conflict Relief、Miss Penalty Sensitivity 和 Hit Rate Is Not AMAT。CACHE_SIZE、BLOCK_SIZE、ASSOCIATIVITY、MISS_PENALTY、HIT_TIME 分别限制只改变对应变量；CUSTOM 允许 config 与 timing 同时变化。每个 point 由 `PerformanceRunner` 从冷 Cache 独立执行，支持 LRU/FIFO，Random 属于 Policy Lab。
+
+页面由 Sweep Controls、Point Editor、Sweep Summary、QPainter Metric Chart、Sweep Point Comparison Table、Selected Point Detail、Hit Rate vs AMAT Tradeoff 和 Analytical L1/L2 AMAT 组成。图表支持 AMAT、Hit Rate、Miss Rate、Total Cycles、Bytes Fetched、Miss Stall Fraction 和 Speedup，未增加 matplotlib、numpy、pandas 或 QtCharts 依赖。
+
+selected point 与 chart metric 是纯展示状态：选点不重跑 sweep，也不改变 `SweepResult`、best/tie、comparison 或 hierarchy；切换 metric 只更新 chart series。Sweep 与 hierarchy 相互独立，分别运行和清理。
+
+Analytical L1/L2 使用：
+
+```text
+AMAT = L1 hit time
+     + L1 miss rate × L2 hit time
+     + L1 miss rate × L2 local miss rate × memory penalty
+```
+
+L2 local miss rate 的分母是到达 L2 的访问；L2 global miss rate 的分母是全部 CPU memory accesses，`global = L1 miss rate × L2 local miss rate`。当前模型没有实际 L2 contents、inclusion/exclusion、write-back traffic 或 parallel lookup。
+
 ## 当前质量基线
 
-- 477 项 `unittest` 全部通过，无 skip。
+- 620 项 `unittest` 全部通过，无 skip。
 - M0 的 CLI、GUI、页面懒加载和 V2 兼容行为继续由回归测试覆盖。
 - Miss Type Lab 的三组 preset、双 Cache、Evidence、Statistics、Timeline 和页面状态保持已完成 smoke 与人工视觉验收。
 - Locality Lab 的六组 preset、Evidence、Cache、Block Map、Statistics、Timeline、平台导航与状态保持已完成 Qt smoke 和用户人工视觉验收。
 - Policy Lab 的七组 preset、三策略决策证据、Cache、Divergence、Statistics、Timeline、平台导航与状态保持已完成 Qt smoke、真实 GUI 启动和用户人工视觉验收。
+- Performance Lab 的六组 sweep、七指标图表、selected point、tradeoff、analytical L1/L2、平台导航与状态保持已完成 Qt smoke、真实 GUI 启动和用户人工视觉验收。
 
-下一阶段为 M4 Performance Lab，仍按“纯逻辑 → `unittest` → GUI”的顺序推进。
+下一阶段为 M5 Write Policy Lab，仍按“纯逻辑 → `unittest` → GUI”的顺序推进。

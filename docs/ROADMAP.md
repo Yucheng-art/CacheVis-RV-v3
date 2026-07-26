@@ -55,19 +55,24 @@
 - Policy Lab 当前状态为 Available。
 - M3 完成时回归基线为 477 项测试，Qt smoke、真实 GUI 启动与用户人工视觉验收通过。
 
-## M4：Performance Lab（下一阶段）
+## M4：Performance Lab（已完成）
 
-- Performance Lab
+1. M4.1：实现显式 timing、单级 performance runner、sweep、analytical L1/L2 和教学 preset。
+2. M4.2：实现 Controller、Page State、metrics/sweep/chart/comparison/hierarchy view model。
+3. M4.3：实现独立 Performance Widget，并接入 Home、Sidebar、Registry 和 Main Window page cache。
 
-继续遵循“纯逻辑 → `unittest` → GUI”的开发顺序；当前尚未实现，不声明具体功能行为。
+- 六个 sweep 覆盖 capacity knee、block benefit/cost、associativity、miss penalty 和 Hit Rate/AMAT reversal。
+- 页面提供可编辑 Point Editor、七指标 QPainter 图表、比较表、selected point、tradeoff 与 analytical L1/L2 分解。
+- 选择 point 或 chart metric 不重新运行 sweep；sweep 与 hierarchy 独立运行和清理。
+- Performance Lab 当前状态为 Available。
+- M4 完成时回归基线为 620 项测试，Qt smoke、真实 GUI 启动和用户人工视觉验收通过。
 
-## 后续 Lab
+## M5：Write Policy Lab（下一阶段）
 
-- Write Policy Lab
+- Write Policy Lab 当前仍为 Coming Soon，`factory=None`。
+- 继续遵循“纯逻辑 → `unittest` → GUI”的开发顺序。
 
-上述 Lab 当前均为规划项，尚未实现。
-
-当前仍未实现 Performance Lab、Write Policy Lab、L2、write-back 完整教学实验、历史 Cache snapshot 回滚、动画、多 trace 批量策略排名和报告导出扩展。
+当前仍未实现实际 L2 Cache hierarchy simulator、inclusion/exclusion、write-back traffic、parallel lookup、pipeline CPI、energy model、hardware-derived hit-time model、动画和 performance report export。
 
 ## 持续质量要求
 

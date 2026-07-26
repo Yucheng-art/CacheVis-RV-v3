@@ -2,7 +2,7 @@
 
 CacheVis-RV V3 是面向计算机组成与 RISC-V Cache 教学的多实验室交互式可视化平台。
 
-V3 已完成 M3 Policy Lab：在保持 V2 稳定行为、M1 严格 3C Miss 分类和 M2 Locality 分析的基础上，提供同步比较 LRU、FIFO 与 seeded Random 的替换策略教学页面。当前应用身份为 `CacheVis-RV V3.0`。
+V3 已完成 M4 Performance Lab：在保持 V2 稳定行为以及 Miss Type、Locality、Policy 教学能力的基础上，提供显式时序假设下的 AMAT sweep、traffic、cycle decomposition 与 analytical L1/L2 教学页面。当前应用身份为 `CacheVis-RV V3.0`。
 
 ## 版本定位
 
@@ -16,19 +16,19 @@ V3 已完成 M3 Policy Lab：在保持 V2 稳定行为、M1 严格 3C Miss 分�
 - Miss Type Lab
 - Locality Lab
 - Policy Lab
+- Performance Lab
 - Single Experiment
 - Compare Experiment
 
 以下教学 Lab 仍为 Coming Soon，尚未实现：
 
-- Performance Lab
 - Write Policy Lab
 
-Policy Lab 对同一 Cache 配置和 address trace 同步运行 LRU、FIFO 与 seeded Random。页面区分 HIT、INVALID_FILL 和 EVICTION，展示三条策略的决策证据、最新 Cache state、victim/state/outcome divergence、统计与 Timeline。历史 Timeline 选择只更新 Selected Decision Evidence，不回滚最新执行状态或 Random stream。
+Performance Lab 使用教学用显式 cycle 模型，而不是宿主机 Python wall-clock benchmark。页面提供六个单级 Cache sweep、可编辑 point、七种指标图表、selected point 细节、Hit Rate/AMAT reversal，以及独立的 analytical L1/L2 AMAT 分解。当前没有实际 L2 CacheSimulator、write-back traffic 或硬件自动推导的 hit-time 模型。
 
-平台页面按需创建并缓存，切换页面不会丢失已创建 Lab 的状态。当前回归基线为 477 项 `unittest` 全部通过，无 skip；Qt smoke、真实 GUI 入口启动和用户人工视觉验收均已通过。
+平台页面按需创建并缓存，切换页面不会丢失已创建 Lab 的状态。当前回归基线为 620 项 `unittest` 全部通过，无 skip；Qt smoke、真实 GUI 入口启动和用户人工视觉验收均已通过。
 
-下一阶段为 M4 Performance Lab，继续遵循“纯逻辑 → `unittest` → GUI”的开发顺序。
+下一阶段为 M5 Write Policy Lab，继续遵循“纯逻辑 → `unittest` → GUI”的开发顺序。
 
 ## 文档
 
@@ -41,6 +41,8 @@ Policy Lab 对同一 Cache 配置和 address trace 同步运行 LRU、FIFO 与 s
 - [M2 Locality Lab Smoke Checklist](docs/V3_M2_LOCALITY_LAB_SMOKE_CHECKLIST.md)
 - [M3 Policy Lab 总结](docs/V3_M3_POLICY_LAB_SUMMARY.md)
 - [M3 Policy Lab Smoke Checklist](docs/V3_M3_POLICY_LAB_SMOKE_CHECKLIST.md)
+- [M4 Performance Lab 总结](docs/V3_M4_PERFORMANCE_LAB_SUMMARY.md)
+- [M4 Performance Lab Smoke Checklist](docs/V3_M4_PERFORMANCE_LAB_SMOKE_CHECKLIST.md)
 - [项目交接上下文](docs/PROJECT_HANDOFF_CONTEXT.md)
 - [V2 继承计划](docs/V2_INHERITANCE_PLAN.md)
 - [路线图](docs/ROADMAP.md)
