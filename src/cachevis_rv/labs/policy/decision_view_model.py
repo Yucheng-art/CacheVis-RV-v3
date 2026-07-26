@@ -6,6 +6,7 @@ from .model import (
     PolicyComparisonStep,
     PolicyDecisionEvidence,
     PolicyDecisionKind,
+    PolicyLineSnapshot,
 )
 
 
@@ -34,6 +35,8 @@ class PolicyLaneDecisionViewModel:
     random_seed: int | None
     random_draw_index: int | None
     metadata_consistent: bool
+    candidate_last_used: tuple[tuple[int, int], ...] = ()
+    candidate_insert_times: tuple[tuple[int, int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -54,6 +57,7 @@ class PolicyComparisonEvidenceViewModel:
 
 def build_lane_decision_view_model(
     evidence: PolicyDecisionEvidence,
+    before_set_lines: tuple[PolicyLineSnapshot, ...] = (),
 ) -> PolicyLaneDecisionViewModel:
     title, path, metric_label = _decision_text(evidence)
     return PolicyLaneDecisionViewModel(
@@ -82,6 +86,16 @@ def build_lane_decision_view_model(
         random_seed=evidence.random_seed,
         random_draw_index=evidence.random_draw_index,
         metadata_consistent=evidence.metadata_consistent,
+        candidate_last_used=tuple(
+            (line.way, line.last_used)
+            for line in before_set_lines
+            if line.valid and line.way in evidence.eligible_victim_ways
+        ),
+        candidate_insert_times=tuple(
+            (line.way, line.insert_time)
+            for line in before_set_lines
+            if line.valid and line.way in evidence.eligible_victim_ways
+        ),
     )
 
 
@@ -89,7 +103,7 @@ def build_comparison_evidence_view_model(
     step: PolicyComparisonStep,
 ) -> PolicyComparisonEvidenceViewModel:
     lane_decisions = tuple(
-        build_lane_decision_view_model(lane.decision)
+        build_lane_decision_view_model(lane.decision, lane.before_set_lines)
         for lane in step.lane_steps
     )
     title, insight = _divergence_text(step)

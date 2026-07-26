@@ -63,8 +63,8 @@ class MissTypePlatformIntegrationTest(unittest.TestCase):
         self.assertEqual(self.window.current_page_id, "miss_type")
         self.assertIsInstance(self.window.page_for("miss_type"), MissTypeLabWidget)
 
-    def test_three_future_labs_remain_unavailable_without_factories(self):
-        for lab_id in ("policy", "performance", "write_policy"):
+    def test_two_future_labs_remain_unavailable_without_factories(self):
+        for lab_id in ("performance", "write_policy"):
             with self.subTest(lab_id=lab_id):
                 lab = get_lab(lab_id)
                 self.assertEqual(lab.status, COMING_SOON)

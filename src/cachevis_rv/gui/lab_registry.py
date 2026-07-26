@@ -42,6 +42,12 @@ def _create_locality():
     return LocalityLabWidget()
 
 
+def _create_policy():
+    from cachevis_rv.labs.policy.widget import PolicyLabWidget
+
+    return PolicyLabWidget()
+
+
 def _create_single_experiment():
     from cachevis_rv.labs.single_experiment import SingleExperimentWidget
 
@@ -94,9 +100,9 @@ LAB_REGISTRY = (
         short_title="Policies",
         description="Compare how replacement choices affect cache contents over time.",
         category="Learn",
-        status=COMING_SOON,
+        status=AVAILABLE,
         concepts=("LRU", "FIFO", "Random"),
-        factory=None,
+        factory=_create_policy,
         order=40,
     ),
     LabDefinition(

@@ -8,7 +8,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from cachevis_rv.gui.lab_registry import COMING_SOON, get_lab
+from cachevis_rv.gui.lab_registry import AVAILABLE, get_lab
 from cachevis_rv.labs.policy import (
     POLICY_PRESETS,
     PolicyComparisonSession,
@@ -67,10 +67,10 @@ class PolicyInvariantsTest(unittest.TestCase):
         self.assertNotIn("choose_victim_way", source)
         self.assertNotIn("_find_hit_way", source)
 
-    def test_policy_lab_remains_coming_soon_without_factory(self):
+    def test_policy_lab_is_available_with_lazy_factory(self):
         lab = get_lab("policy")
-        self.assertEqual(lab.status, COMING_SOON)
-        self.assertIsNone(lab.factory)
+        self.assertEqual(lab.status, AVAILABLE)
+        self.assertTrue(callable(lab.factory))
 
 
 if __name__ == "__main__":
