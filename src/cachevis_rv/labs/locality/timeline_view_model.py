@@ -50,12 +50,21 @@ def build_timeline_item(
         block_reuse_gap=evidence.block_reuse_gap,
         block_reuse_distance=evidence.block_reuse_distance,
         tooltip=(
-            f"Step {step.step_index + 1}; address {step.address_hex}; "
-            f"block {step.block_address}; offset {step.offset}; "
-            f"cache {'HIT' if step.cache_hit else 'MISS'}; "
-            f"locality {step.locality_kind.value}"
+            f"Step {step.step_index + 1}\n"
+            f"Address: {step.address} ({step.address_hex})\n"
+            f"Block: {step.block_address}; Offset: {step.offset}\n"
+            f"Primary evidence: {step.locality_kind.value}\n"
+            f"cache {'HIT' if step.cache_hit else 'MISS'}\n"
+            f"Address reuse gap: {_display(evidence.address_reuse_gap)}\n"
+            f"Block reuse gap: {_display(evidence.block_reuse_gap)}\n"
+            f"Block reuse distance: {_display(evidence.block_reuse_distance)}\n"
+            f"Reason: {evidence.classification_reason}"
         ),
     )
+
+
+def _display(value: int | None) -> str:
+    return "N/A" if value is None else str(value)
 
 
 def build_timeline_items(

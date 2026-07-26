@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from cachevis_rv.core import CacheConfig
 from cachevis_rv.labs.locality import EMPTY_PAGE_STATE, LocalityController
-from cachevis_rv.gui.lab_registry import COMING_SOON, get_lab
+from cachevis_rv.gui.lab_registry import AVAILABLE, get_lab
 
 
 class LocalityPageStateTest(unittest.TestCase):
@@ -47,10 +47,10 @@ class LocalityPageStateTest(unittest.TestCase):
             with open(os.path.join(root, name), encoding="utf-8") as source:
                 self.assertNotIn("PySide6", source.read())
 
-    def test_registry_keeps_locality_coming_soon_without_factory(self):
+    def test_registry_exposes_available_locality_lazy_factory(self):
         definition = get_lab("locality")
-        self.assertEqual(definition.status, COMING_SOON)
-        self.assertIsNone(definition.factory)
+        self.assertEqual(definition.status, AVAILABLE)
+        self.assertTrue(callable(definition.factory))
 
 
 if __name__ == "__main__":

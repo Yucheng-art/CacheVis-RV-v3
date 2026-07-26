@@ -36,6 +36,12 @@ def _create_miss_type():
     return MissTypeLabWidget()
 
 
+def _create_locality():
+    from cachevis_rv.labs.locality.widget import LocalityLabWidget
+
+    return LocalityLabWidget()
+
+
 def _create_single_experiment():
     from cachevis_rv.labs.single_experiment import SingleExperimentWidget
 
@@ -77,9 +83,9 @@ LAB_REGISTRY = (
         short_title="Locality",
         description="Relate temporal and spatial locality to cache behavior.",
         category="Learn",
-        status=COMING_SOON,
+        status=AVAILABLE,
         concepts=("Temporal locality", "Spatial locality"),
-        factory=None,
+        factory=_create_locality,
         order=30,
     ),
     LabDefinition(

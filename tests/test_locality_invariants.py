@@ -9,7 +9,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from cachevis_rv.gui.lab_registry import COMING_SOON, get_lab
+from cachevis_rv.gui.lab_registry import AVAILABLE, get_lab
 from cachevis_rv.labs.locality import (
     LOCALITY_PRESETS,
     LocalityKind,
@@ -52,6 +52,8 @@ class LocalityInvariantsTest(unittest.TestCase):
             / "src" / "cachevis_rv" / "labs" / "locality"
         )
         for path in package.glob("*.py"):
+            if path.name == "widget.py":
+                continue
             source = path.read_text(encoding="utf-8")
             with self.subTest(path=path.name):
                 self.assertNotIn("PySide6", source)
@@ -85,11 +87,11 @@ class LocalityInvariantsTest(unittest.TestCase):
         self.assertNotIn("CacheSimulator", source)
         self.assertNotIn("LocalitySession", source)
 
-    def test_locality_registry_remains_coming_soon_without_factory(self):
+    def test_locality_registry_is_available_with_lazy_factory(self):
         lab = get_lab("locality")
 
-        self.assertEqual(lab.status, COMING_SOON)
-        self.assertIsNone(lab.factory)
+        self.assertEqual(lab.status, AVAILABLE)
+        self.assertTrue(callable(lab.factory))
 
 
 if __name__ == "__main__":
