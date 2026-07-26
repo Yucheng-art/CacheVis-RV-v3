@@ -16,7 +16,22 @@ PACKAGE = ROOT / "src" / "cachevis_rv" / "labs" / "performance"
 class PerformanceScopeTest(unittest.TestCase):
     def test_package_contains_only_pure_python_modules(self):
         self.assertEqual(
-            {"__init__.py", "model.py", "timing.py", "runner.py", "sweep.py", "hierarchy.py", "presets.py"},
+            {
+                "__init__.py",
+                "timing.py",
+                "model.py",
+                "runner.py",
+                "sweep.py",
+                "hierarchy.py",
+                "presets.py",
+                "controller.py",
+                "page_state.py",
+                "metrics_view_model.py",
+                "sweep_view_model.py",
+                "chart_view_model.py",
+                "comparison_view_model.py",
+                "hierarchy_view_model.py",
+            },
             {path.name for path in PACKAGE.glob("*.py")},
         )
         for path in PACKAGE.glob("*.py"):
