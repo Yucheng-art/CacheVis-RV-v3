@@ -48,6 +48,12 @@ def _create_policy():
     return PolicyLabWidget()
 
 
+def _create_performance():
+    from cachevis_rv.labs.performance.widget import PerformanceLabWidget
+
+    return PerformanceLabWidget()
+
+
 def _create_single_experiment():
     from cachevis_rv.labs.single_experiment import SingleExperimentWidget
 
@@ -111,9 +117,9 @@ LAB_REGISTRY = (
         short_title="Performance",
         description="Connect hit rate and miss cost to effective memory performance.",
         category="Learn",
-        status=COMING_SOON,
+        status=AVAILABLE,
         concepts=("AMAT", "Miss penalty"),
-        factory=None,
+        factory=_create_performance,
         order=50,
     ),
     LabDefinition(

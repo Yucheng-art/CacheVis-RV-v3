@@ -6,51 +6,60 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from cachevis_rv.gui.lab_registry import COMING_SOON, get_lab
+from cachevis_rv.gui.lab_registry import AVAILABLE, get_lab
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "src" / "cachevis_rv" / "labs" / "performance"
+PURE_MODULES = {
+    "__init__.py",
+    "timing.py",
+    "model.py",
+    "runner.py",
+    "sweep.py",
+    "hierarchy.py",
+    "presets.py",
+    "controller.py",
+    "page_state.py",
+    "metrics_view_model.py",
+    "sweep_view_model.py",
+    "chart_view_model.py",
+    "comparison_view_model.py",
+    "hierarchy_view_model.py",
+}
+
+
+def pure_module_paths():
+    return tuple(PACKAGE / name for name in PURE_MODULES)
 
 
 class PerformanceScopeTest(unittest.TestCase):
     def test_package_contains_only_pure_python_modules(self):
         self.assertEqual(
+            PURE_MODULES,
             {
-                "__init__.py",
-                "timing.py",
-                "model.py",
-                "runner.py",
-                "sweep.py",
-                "hierarchy.py",
-                "presets.py",
-                "controller.py",
-                "page_state.py",
-                "metrics_view_model.py",
-                "sweep_view_model.py",
-                "chart_view_model.py",
-                "comparison_view_model.py",
-                "hierarchy_view_model.py",
+                path.name
+                for path in PACKAGE.glob("*.py")
+                if path.name != "widget.py"
             },
-            {path.name for path in PACKAGE.glob("*.py")},
         )
-        for path in PACKAGE.glob("*.py"):
+        for path in pure_module_paths():
             ast.parse(path.read_text(encoding="utf-8"))
 
     def test_package_does_not_depend_on_pyside_or_gui(self):
-        source = "\n".join(path.read_text(encoding="utf-8") for path in PACKAGE.glob("*.py"))
+        source = "\n".join(path.read_text(encoding="utf-8") for path in pure_module_paths())
         self.assertNotIn("PySide6", source)
         self.assertNotIn("QApplication", source)
         self.assertNotIn("QWidget", source)
         self.assertNotIn("cachevis_rv.gui", source)
 
     def test_package_does_not_use_wall_clock_or_new_heavy_dependencies(self):
-        source = "\n".join(path.read_text(encoding="utf-8") for path in PACKAGE.glob("*.py"))
+        source = "\n".join(path.read_text(encoding="utf-8") for path in pure_module_paths())
         for forbidden in ("perf_counter", "time.time", "numpy", "pandas", "matplotlib"):
             self.assertNotIn(forbidden, source)
 
     def test_package_does_not_depend_on_other_lab_internals(self):
-        source = "\n".join(path.read_text(encoding="utf-8") for path in PACKAGE.glob("*.py"))
+        source = "\n".join(path.read_text(encoding="utf-8") for path in pure_module_paths())
         for lab in ("miss_type", "locality", "policy", "address_explorer"):
             self.assertNotIn(f"labs.{lab}", source)
 
@@ -59,10 +68,10 @@ class PerformanceScopeTest(unittest.TestCase):
         self.assertNotIn("CacheSimulator", source)
         self.assertNotIn("CacheConfig", source)
 
-    def test_performance_lab_remains_coming_soon_without_factory(self):
+    def test_performance_lab_is_available_with_lazy_factory(self):
         lab = get_lab("performance")
-        self.assertEqual(COMING_SOON, lab.status)
-        self.assertIsNone(lab.factory)
+        self.assertEqual(AVAILABLE, lab.status)
+        self.assertTrue(callable(lab.factory))
 
     def test_importing_package_has_no_qapplication_side_effect(self):
         before = set(sys.modules)

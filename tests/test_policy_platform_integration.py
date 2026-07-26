@@ -30,7 +30,7 @@ class PolicyPlatformIntegrationTest(unittest.TestCase):
         self.assertEqual(AVAILABLE, lab.status)
         self.assertTrue(callable(lab.factory))
         self.assertIsNone(self.window.page_for("policy"))
-        self.assertEqual(6, len(get_available_labs()))
+        self.assertEqual(7, len(get_available_labs()))
 
     def test_home_and_sidebar_expose_policy_in_learn_order(self):
         action = self.window.home_page._action_buttons["policy"]
@@ -60,13 +60,12 @@ class PolicyPlatformIntegrationTest(unittest.TestCase):
         self.assertTrue(self.window.navigate_to("policy"))
         self.assertIs(page, self.window.page_for("policy"))
 
-    def test_only_performance_and_write_policy_remain_unavailable(self):
-        for lab_id in ("performance", "write_policy"):
-            lab = get_lab(lab_id)
-            self.assertEqual(COMING_SOON, lab.status)
-            self.assertIsNone(lab.factory)
-            self.assertFalse(self.window.navigate_to(lab_id))
-            self.assertIsNone(self.window.page_for(lab_id))
+    def test_only_write_policy_remains_unavailable(self):
+        lab = get_lab("write_policy")
+        self.assertEqual(COMING_SOON, lab.status)
+        self.assertIsNone(lab.factory)
+        self.assertFalse(self.window.navigate_to("write_policy"))
+        self.assertIsNone(self.window.page_for("write_policy"))
 
 
 if __name__ == "__main__":

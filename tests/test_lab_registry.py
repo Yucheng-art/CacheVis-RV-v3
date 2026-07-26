@@ -17,7 +17,7 @@ from cachevis_rv.gui.lab_registry import (
 
 
 class LabRegistryTest(unittest.TestCase):
-    def test_six_available_labs_are_registered(self):
+    def test_seven_available_labs_are_registered(self):
         available = {lab.lab_id for lab in get_available_labs()}
 
         self.assertEqual(available, {
@@ -25,21 +25,19 @@ class LabRegistryTest(unittest.TestCase):
             "miss_type",
             "locality",
             "policy",
+            "performance",
             "single_experiment",
             "compare_experiment",
         })
 
-    def test_two_future_labs_are_coming_soon(self):
+    def test_only_write_policy_is_coming_soon(self):
         future = {
             lab.lab_id
             for lab in LAB_REGISTRY
             if lab.status == COMING_SOON
         }
 
-        self.assertEqual(future, {
-            "performance",
-            "write_policy",
-        })
+        self.assertEqual(future, {"write_policy"})
 
     def test_lab_ids_and_orders_are_unique_and_stable(self):
         ids = [lab.lab_id for lab in LAB_REGISTRY]

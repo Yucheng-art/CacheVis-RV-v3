@@ -36,13 +36,10 @@ class HomePageMetadataTest(unittest.TestCase):
         self.assertEqual(statuses["miss_type"], AVAILABLE)
         self.assertEqual(statuses["locality"], AVAILABLE)
         self.assertEqual(statuses["policy"], AVAILABLE)
+        self.assertEqual(statuses["performance"], AVAILABLE)
         self.assertEqual(statuses["single_experiment"], AVAILABLE)
         self.assertEqual(statuses["compare_experiment"], AVAILABLE)
-        for lab_id in (
-            "performance",
-            "write_policy",
-        ):
-            self.assertEqual(statuses[lab_id], COMING_SOON)
+        self.assertEqual(statuses["write_policy"], COMING_SOON)
 
     def test_coming_soon_cards_cannot_create_or_navigate_to_pages(self):
         future = [lab for lab in get_labs() if lab.status == COMING_SOON]
