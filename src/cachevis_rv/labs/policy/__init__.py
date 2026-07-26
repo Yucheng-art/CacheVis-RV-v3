@@ -1,5 +1,21 @@
 """Public pure-Python API for replacement-policy comparison."""
 
+from .cache_view_model import (
+    PolicyCacheLineViewModel,
+    PolicyLaneCacheViewModel,
+    build_lane_cache_view_models,
+)
+from .controller import PolicyController
+from .decision_view_model import (
+    PolicyComparisonEvidenceViewModel,
+    PolicyLaneDecisionViewModel,
+    build_comparison_evidence_view_model,
+    build_lane_decision_view_model,
+)
+from .divergence_view_model import (
+    PolicyDivergenceSummaryViewModel,
+    build_divergence_summary,
+)
 from .explainer import POLICIES, PolicyDecisionExplainer
 from .model import (
     PolicyComparisonStatistics,
@@ -23,6 +39,18 @@ from .presets import (
 )
 from .random_stream import IsolatedRandomStream
 from .session import CacheSnapshot, PolicyComparisonSession
+from .page_state import EMPTY_PAGE_STATE, PolicyPageState
+from .statistics_view_model import (
+    PolicyComparisonStatisticsViewModel,
+    PolicyLaneStatisticsViewModel,
+    build_statistics_view_model,
+)
+from .timeline_view_model import (
+    PolicyTimelineItemViewModel,
+    PolicyTimelineLaneBadgeViewModel,
+    build_timeline_item,
+    build_timeline_items,
+)
 
 __all__ = [
     "POLICIES",
@@ -37,6 +65,25 @@ __all__ = [
     "PolicyComparisonSession",
     "CacheSnapshot",
     "IsolatedRandomStream",
+    "PolicyController",
+    "PolicyPageState",
+    "EMPTY_PAGE_STATE",
+    "PolicyCacheLineViewModel",
+    "PolicyLaneCacheViewModel",
+    "build_lane_cache_view_models",
+    "PolicyLaneDecisionViewModel",
+    "PolicyComparisonEvidenceViewModel",
+    "build_lane_decision_view_model",
+    "build_comparison_evidence_view_model",
+    "PolicyLaneStatisticsViewModel",
+    "PolicyComparisonStatisticsViewModel",
+    "build_statistics_view_model",
+    "PolicyDivergenceSummaryViewModel",
+    "build_divergence_summary",
+    "PolicyTimelineLaneBadgeViewModel",
+    "PolicyTimelineItemViewModel",
+    "build_timeline_item",
+    "build_timeline_items",
     "PolicyPreset",
     "NO_REPLACEMENT_PRESSURE",
     "VICTIM_DIVERGENCE_BEFORE_OUTCOME",

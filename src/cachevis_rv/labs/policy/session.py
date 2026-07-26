@@ -59,6 +59,17 @@ class PolicyComparisonSession:
     def next_step_index(self) -> int:
         return self._next_step_index
 
+    @property
+    def line_count(self) -> int:
+        """Return the stable number of lines in every policy lane."""
+        return self.config.cache_size_bytes // self.config.block_size_bytes
+
+    def policy_config(self, policy: str) -> CacheConfig:
+        """Return an immutable config copy for one policy lane."""
+        if policy not in self.policies:
+            raise ValueError(f"unsupported replacement policy: {policy}")
+        return self._policy_config(policy)
+
     def reset(self) -> None:
         for simulator in self._simulators.values():
             simulator.reset()
