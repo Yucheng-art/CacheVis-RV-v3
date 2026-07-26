@@ -21,12 +21,12 @@ CacheVis-RV V3 是面向计算机组成与 RISC-V Cache 教学的多实验室交
 
 - Address Explorer
 - Miss Type Lab
+- Locality Lab
 - Single Experiment
 - Compare Experiment
 
 仍为 Coming Soon：
 
-- Locality Lab
 - Policy Lab
 - Performance Lab
 - Write Policy Lab
@@ -39,7 +39,7 @@ V3 继续采用 Python、PySide6 和 `unittest`。当前代码按以下边界组
 
 1. `cachevis_rv.core`：Cache 配置、行、模拟器、替换策略和统计。
 2. 实验服务包：trace、runner 与 report 等可复用纯逻辑服务。
-3. 独立 Lab：Address Explorer、Miss Type Lab、Single Experiment、Compare Experiment 分别拥有自己的逻辑、controller/view model 与 widget 边界。
+3. 独立 Lab：Address Explorer、Miss Type Lab、Locality Lab、Single Experiment、Compare Experiment 分别拥有自己的逻辑、controller/view model 与 widget 边界。
 4. `cachevis_rv.gui`：只负责平台导航、Home、Registry、窗口协调与平台样式。
 
 平台层不得承载 Lab 业务逻辑；不同 Lab 不得堆积在单一 Widget 中。共享能力通过明确、稳定的公共接口提供。
@@ -76,10 +76,45 @@ Reference Cache 与 Actual Cache 容量相同、block size 相同，但采用 fu
 - Conflict demo：C C F F
 - Capacity demo：C C C A
 
+## M2 Locality Lab
+
+Locality Lab 已通过 Registry 接入 Home 与 Sidebar，并复用 Main Window 的 lazy page cache。教学模型采用 mutually exclusive primary evidence：
+
+- exact address 已访问 → `TEMPORAL`
+- address 未访问但 block 已访问 → `SPATIAL`
+- block 未访问 → `FIRST_TOUCH`
+
+现实访问可能同时具有多种局部性特征；互斥分类仅用于逐步教学解释。地址转换固定为：
+
+- `block_address = address // block_size_bytes`
+- `offset = address % block_size_bytes`
+
+F/S/T 与 Cache 结果相互独立：HIT 不自动代表 Temporal，MISS 不代表没有 locality；Spatial hit 与 Temporal miss 都可能出现。
+
+分析指标包括 address/block reuse gap、block reuse distance、same-block transition、address delta、unique address/block、hit/miss，以及 F/S/T counts 和 rates。Block reuse distance 使用 MRU→LRU distinct-block recency stack，取访问前目标 block 所在索引。
+
+页面由 Experiment Controls、Current Access、Locality Evidence、Cache State、Block/Offset Access Map、Locality Statistics、Teaching Insight 和 Timeline 组成。历史 Timeline 选择只更新 Selected Evidence 与 SELECTED 标记；Current Access、Cache State、Statistics 和 Block Map 保持最新执行状态。
+
+六个 preset 的稳定结果：
+
+| Preset | F/S/T | Hits/Misses |
+|---|---:|---:|
+| Sequential Spatial | 2/6/0 | 6/2 |
+| Fixed Stride | 8/0/0 | 0/8 |
+| Loop Temporal Reuse | 1/3/4 | 7/1 |
+| Block Locality | 1/3/4 | 7/1 |
+| Matrix Row-Major | 4/12/0 | 12/4 |
+| Matrix Column-Major | 4/12/0 | 0/16 |
+
+Row-major 与 Column-major 访问相同 16 个地址，最终 Block Map cell 集合和 F/S 计数相同，但访问顺序及 Cache 结果不同。Column-major 仍具有 spatial locality 潜力，只是当前 Cache 组织没有有效利用它。
+
+统计层持续验证 `F + S + T = Accesses`、`F + S = Unique Addresses`、`Hits + Misses = Accesses`。没有 reuse 样本时平均值显示 N/A。
+
 ## 当前质量基线
 
-- 270 项 `unittest` 全部通过，无 skip。
+- 370 项 `unittest` 全部通过，无 skip。
 - M0 的 CLI、GUI、页面懒加载和 V2 兼容行为继续由回归测试覆盖。
 - Miss Type Lab 的三组 preset、双 Cache、Evidence、Statistics、Timeline 和页面状态保持已完成 smoke 与人工视觉验收。
+- Locality Lab 的六组 preset、Evidence、Cache、Block Map、Statistics、Timeline、平台导航与状态保持已完成 Qt smoke 和用户人工视觉验收。
 
-下一阶段为 M2 Locality Lab，仍按“纯逻辑 → `unittest` → GUI”的顺序推进。
+下一阶段为 M3 Policy Lab，仍按“纯逻辑 → `unittest` → GUI”的顺序推进。

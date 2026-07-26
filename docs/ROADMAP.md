@@ -27,21 +27,33 @@
 - Miss Type Lab 当前状态为 Available。
 - M1 完成时回归基线为 270 项测试。
 
-## M2：Locality Lab（下一阶段）
+## M2：Locality Lab（已完成）
 
-- 先定义 temporal locality 与 spatial locality 的纯逻辑教学模型。
-- 再建立 `unittest` 验证。
-- 最后设计独立 controller、view model 和 widget，并接入平台。
+1. M2.1：实现纯 Python Locality Analyzer、Session、统计、不变量和六个教学 preset。
+2. M2.2：实现 Controller、Page State、Cache/Evidence/Statistics/Timeline/Block Access view model。
+3. M2.3：实现独立 Locality Widget，并接入 Home、Sidebar、Registry 和 Main Window 页面缓存。
+
+- 主证据分类为 First Touch、Spatial、Temporal。
+- 展示 address/block reuse gap、block reuse distance、same-block transition 和 address delta。
+- 展示 Cache State、Block/Offset Access Map、Statistics、Teaching Insight 和 Timeline。
+- 历史 Timeline 选择不回滚 Current Access、Cache、Statistics 或 Block Map。
+- Row-major/Column-major 教学对比明确区分 locality 潜力与实际 Cache 利用效果。
+- Locality Lab 当前状态为 Available。
+- M2 完成时回归基线为 370 项测试，Qt smoke 与用户人工视觉验收通过。
+
+## M3：Policy Lab（下一阶段）
+
+- 按“纯逻辑 → `unittest` → GUI”顺序研究和展示 replacement policy 行为。
+- 当前尚未实现，不在 M2 文档中声明任何功能行为。
 
 ## 后续 Lab
 
-- Policy Lab
 - Performance Lab
 - Write Policy Lab
 
 上述 Lab 当前均为规划项，尚未实现。
 
-M2 Locality Lab 也尚未实现；本路线图仅记录下一阶段方向。
+当前仍未实现 Policy、Performance、Write Policy、L2、历史 Cache snapshot 回滚、动画、Locality 双实验同时对比引擎和报告导出扩展。
 
 ## 持续质量要求
 

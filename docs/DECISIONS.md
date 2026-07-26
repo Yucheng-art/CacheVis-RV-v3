@@ -71,3 +71,27 @@
 - 状态：已决定
 - 决策：M1.3 完成后，Miss Type Lab 状态改为 Available，由 Registry factory 延迟创建并由 Main Window 缓存；Home 与 Sidebar 继续完全由 Registry 元数据驱动。
 - 原因：复用既有平台扩展机制，不在 Main Window 中加入 Miss Type 专用分支，并确保页面切换后实验状态保持。
+
+## D-013：Locality 使用互斥的教学主证据分类
+
+- 状态：已决定
+- 决策：exact address 已访问分类为 `TEMPORAL`；address 未访问但 block 已访问分类为 `SPATIAL`；block 未访问分类为 `FIRST_TOUCH`。
+- 原因：现实访问可能同时体现多种局部性特征，但互斥主证据有利于逐步展示判断链路、建立稳定统计不变量，并避免含糊的 unknown 状态。
+
+## D-014：Locality 证据与 Cache HIT/MISS 相互独立
+
+- 状态：已决定
+- 决策：F/S/T 只由访问历史确定，不由 Cache 结果反推；HIT 不自动代表 Temporal，MISS 不代表没有 locality。历史 Timeline 选择只更新 Selected Evidence，不回滚 Current Access、Cache、Statistics 或 Block Map。
+- 原因：局部性描述访问模式，Cache 结果还取决于容量、映射、替换策略和访问顺序；分离两者可避免错误教学结论。
+
+## D-015：Block reuse distance 使用 distinct-block recency stack
+
+- 状态：已决定
+- 决策：维护 MRU→LRU 的 distinct-block recency stack，访问前目标 block 所在索引作为 block reuse distance；首次访问没有 reuse distance。
+- 原因：该定义确定、可测试，并能直观表达两次访问同一 block 之间出现了多少不同 block。
+
+## D-016：Locality Lab 通过 Registry 成为可用 Lab
+
+- 状态：已决定
+- 决策：M2.3 完成后 Locality Lab 状态改为 Available，由 Registry factory 延迟创建并由 Main Window 缓存；Home 与 Sidebar 继续由 Registry 元数据驱动。
+- 原因：保持平台扩展机制一致，避免在 Main Window 中增加 Locality 专用业务分支，并确保页面切换后实验状态保持。
