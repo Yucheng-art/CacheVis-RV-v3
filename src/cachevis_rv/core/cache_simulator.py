@@ -39,28 +39,53 @@ class CacheSimulator:
 
         hit_way = self._find_hit_way(cache_set, tag)
         hit = hit_way is not None
+        # ``victim_way`` is retained as the legacy "accessed way" field used
+        # by existing labs.  The new evidence fields below distinguish hits,
+        # fills, and actual evictions without changing that public behavior.
         victim_way = hit_way
         replaced_valid = False
         replaced_tag = None
+        allocated = False
+        bypassed = False
+        fill_way = None
+        evicted_way = None
+        victim_tag = None
+        victim_dirty = False
+        line_dirty_before = None
+        line_dirty_after = None
 
         if hit:
             self.hits += 1
             line = cache_set[hit_way]
+            line_dirty_before = line.dirty
             line.last_used = self._clock
-            if operation == "write" and self.config.write_policy != "write-through":
-                line.dirty = True
+            if operation == "write":
+                line.dirty = self.config.write_policy == "write-back"
+            line_dirty_after = line.dirty
+        elif operation == "write" and not self.config.write_allocate:
+            self.misses += 1
+            victim_way = None
+            bypassed = True
         else:
             self.misses += 1
             victim_way = choose_victim_way(cache_set, self.config.replacement_policy)
             victim = cache_set[victim_way]
             replaced_valid = victim.valid
             replaced_tag = victim.tag
+            allocated = True
+            fill_way = victim_way
+            line_dirty_before = victim.dirty
+            if replaced_valid:
+                evicted_way = victim_way
+                victim_tag = victim.tag
+                victim_dirty = victim.dirty
 
             victim.valid = True
             victim.tag = tag
-            victim.dirty = operation == "write" and self.config.write_policy != "write-through"
+            victim.dirty = operation == "write" and self.config.write_policy == "write-back"
             victim.last_used = self._clock
             victim.insert_time = self._clock
+            line_dirty_after = victim.dirty
 
         return {
             "access_id": self._access_id,
@@ -73,6 +98,15 @@ class CacheSimulator:
             "victim_way": victim_way,
             "replaced_valid": replaced_valid,
             "replaced_tag": replaced_tag,
+            "allocated": allocated,
+            "bypassed": bypassed,
+            "hit_way": hit_way,
+            "fill_way": fill_way,
+            "evicted_way": evicted_way,
+            "victim_tag": victim_tag,
+            "victim_dirty": victim_dirty,
+            "line_dirty_before": line_dirty_before,
+            "line_dirty_after": line_dirty_after,
             "total_accesses": self.total_accesses,
             "hits": self.hits,
             "misses": self.misses,

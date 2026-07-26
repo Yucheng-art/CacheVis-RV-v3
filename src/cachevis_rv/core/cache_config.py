@@ -13,6 +13,7 @@ class CacheConfig:
     replacement_policy: str = "LRU"
     write_policy: str = "write-through"
     address_bits: int = 32
+    write_allocate: bool = True
 
     def __post_init__(self) -> None:
         """Validate parameters after dataclass initialization."""
@@ -46,9 +47,11 @@ class CacheConfig:
                 f"replacement_policy must be one of {sorted(allowed_replacement)}"
             )
 
-        allowed_write = {"write-through"}
+        allowed_write = {"write-through", "write-back"}
         if self.write_policy not in allowed_write:
             raise ValueError(f"write_policy must be one of {sorted(allowed_write)}")
+        if not isinstance(self.write_allocate, bool):
+            raise ValueError("write_allocate must be a bool")
 
         if self.tag_bits < 0:
             raise ValueError("address_bits is too small for this cache configuration")
