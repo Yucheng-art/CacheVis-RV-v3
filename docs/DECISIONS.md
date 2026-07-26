@@ -95,3 +95,33 @@
 - 状态：已决定
 - 决策：M2.3 完成后 Locality Lab 状态改为 Available，由 Registry factory 延迟创建并由 Main Window 缓存；Home 与 Sidebar 继续由 Registry 元数据驱动。
 - 原因：保持平台扩展机制一致，避免在 Main Window 中增加 Locality 专用业务分支，并确保页面切换后实验状态保持。
+
+## D-017：Policy Lab 同步比较三种正式 replacement policy
+
+- 状态：已决定
+- 决策：Policy Lab 对同一 Cache size、block size、ways、address width 和 address trace 同步运行 `LRU`、`FIFO`、`Random` 三条独立 lane，唯一变化为 core 接受的 replacement policy 字符串。
+- 原因：控制其他变量，直接展示替换策略如何改变 victim、Cache state 与后续 HIT/MISS；项目没有正式 `ReplacementPolicy` enum，因此不创建重复枚举。
+
+## D-018：Policy 决策严格区分 HIT、INVALID_FILL 与 EVICTION
+
+- 状态：已决定
+- 决策：目标 tag 已存在时为 `HIT`；目标 tag 不存在但有 invalid way 时为 `INVALID_FILL`；只有目标 tag 不存在且映射 set 已满时才为 `EVICTION`。Invalid fill 不驱逐有效 line，也不属于 replacement。
+- 原因：避免把所有 miss 都错误描述为 replacement，并明确 replacement policy 只有在 full-set miss 时才参与 victim 选择。
+
+## D-019：Random lane 使用隔离的 seeded replay
+
+- 状态：已决定
+- 决策：Session 持有独立 `random.Random(seed)` 状态；每次 Random access 临时切换模块级 random 状态，正式调用一次 `CacheSimulator`，保存私有随机状态，并在 `finally` 中恢复进程全局状态。不得修改 core、复制 Random victim 算法或留下未恢复的全局 seed。
+- 原因：在复用 core 正式 Random 行为的同时获得可复现性，并隔离不同 Session 与进程其他代码的随机状态。
+
+## D-020：Policy 历史选择只切换决策证据
+
+- 状态：已决定
+- 决策：选择历史 Timeline step 只更新 `selected_step`、Selected Decision Evidence 和 Timeline SELECTED；Current Access、LRU/FIFO/Random Cache state、Statistics、Divergence Summary、Random stream 与 `next_step_index` 保持最新执行状态。
+- 原因：明确区分历史证据查看与模拟状态回滚，避免消费额外随机数或暗示尚未实现的历史 Cache snapshot 能力。
+
+## D-021：Policy Lab 通过 Registry 成为可用 Lab
+
+- 状态：已决定
+- 决策：M3.3 完成后 Policy Lab 状态改为 Available，由 Registry factory 延迟创建并由 Main Window 通用 page cache 复用；Home 与 Sidebar 继续由 Registry 元数据驱动。
+- 原因：保持平台扩展机制一致，不在 Main Window 中加入 Policy 专用分支，并确保页面切换后实验状态保持。

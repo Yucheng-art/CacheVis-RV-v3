@@ -22,12 +22,12 @@ CacheVis-RV V3 是面向计算机组成与 RISC-V Cache 教学的多实验室交
 - Address Explorer
 - Miss Type Lab
 - Locality Lab
+- Policy Lab
 - Single Experiment
 - Compare Experiment
 
 仍为 Coming Soon：
 
-- Policy Lab
 - Performance Lab
 - Write Policy Lab
 
@@ -39,7 +39,7 @@ V3 继续采用 Python、PySide6 和 `unittest`。当前代码按以下边界组
 
 1. `cachevis_rv.core`：Cache 配置、行、模拟器、替换策略和统计。
 2. 实验服务包：trace、runner 与 report 等可复用纯逻辑服务。
-3. 独立 Lab：Address Explorer、Miss Type Lab、Locality Lab、Single Experiment、Compare Experiment 分别拥有自己的逻辑、controller/view model 与 widget 边界。
+3. 独立 Lab：Address Explorer、Miss Type Lab、Locality Lab、Policy Lab、Single Experiment、Compare Experiment 分别拥有自己的逻辑、controller/view model 与 widget 边界。
 4. `cachevis_rv.gui`：只负责平台导航、Home、Registry、窗口协调与平台样式。
 
 平台层不得承载 Lab 业务逻辑；不同 Lab 不得堆积在单一 Widget 中。共享能力通过明确、稳定的公共接口提供。
@@ -110,11 +110,54 @@ Row-major 与 Column-major 访问相同 16 个地址，最终 Block Map cell 集
 
 统计层持续验证 `F + S + T = Accesses`、`F + S = Unique Addresses`、`Hits + Misses = Accesses`。没有 reuse 样本时平均值显示 N/A。
 
+## M3 Policy Lab
+
+Policy Lab 已通过 Registry 接入 Home 与 Sidebar，并复用 Main Window 的 lazy page cache。三条 lane 对相同 Cache size、block size、ways、address width 与 address trace 同步运行，唯一变化是 core 正式字符串接口中的 replacement policy：`LRU`、`FIFO`、`Random`。项目当前没有正式 `ReplacementPolicy` enum，因此没有创建重复枚举。
+
+每次访问只产生三种正式决策之一：
+
+- `HIT`：目标 tag 已在映射 set 中，不 fill、不 eviction。
+- `INVALID_FILL`：目标 tag 不在 set 中，但存在 invalid way；填充空 way，不驱逐有效 line，也不属于 replacement。
+- `EVICTION`：目标 tag 不在 set 中且 set 已满，才按 replacement policy 选择 victim。
+
+LRU 根据 `last_used` 选择最久未使用候选，hit 会更新 recency；FIFO 根据 `insert_time` 选择最早插入候选，hit 不刷新 insertion order；Random 将所有 valid ways 视为候选，使用可复现的 seeded replay，不代表最优、最旧或最少使用。
+
+Random lane 由 Session 持有独立的 `random.Random(seed)` 状态。每次 Random access 临时把该私有状态交给模块级 `random`，正式调用一次 `CacheSimulator.access`，保存更新后的 Session 私有状态，并在 `finally` 中恢复进程原有的全局 random 状态。该机制不修改 core、不留下全局 `random.seed` 副作用，也不复制 Random victim 算法。
+
+Policy Lab 分别记录 victim、state 与 outcome divergence。victim/state divergence 可以先发生，而当前三条 lane 的 HIT/MISS 仍完全相同；后续访问才可能形成 outcome divergence。页面展示完整因果链：
+
+```text
+Same address
+→ Same set and tag
+→ Each policy observes its own Cache state
+→ HIT / INVALID FILL / EVICTION
+→ Victim selection
+→ Cache state divergence
+→ Possible future HIT/MISS divergence
+```
+
+页面由 Experiment Controls、Preset Teaching Insight、Current Access、Divergence Summary、Selected Decision Evidence、Latest Cache State、Statistics Comparison 和 Timeline 组成。历史 Timeline 选择只更新 `selected_step`、Selected Decision Evidence 与 Timeline SELECTED；Current Access、三条 Cache state、Statistics、Divergence Summary、Random stream 和 `next_step_index` 均保持最新状态。
+
+七个内置 preset 的稳定结果：
+
+| Preset | LRU | FIFO | Random |
+|---|---:|---:|---:|
+| No Replacement Pressure | 2H / 2M | 2H / 2M | 2H / 2M |
+| Victim Divergence Before Outcome | 1H / 3M | 1H / 3M | 1H / 3M |
+| LRU Advantage | 2H / 3M | 1H / 4M | 1H / 4M |
+| FIFO Advantage | 1H / 4M | 2H / 3M | 2H / 3M |
+| Set-Local Pressure | 1H / 4M | 2H / 3M | 2H / 3M |
+| Direct-Mapped Control | 0H / 4M | 0H / 4M | 0H / 4M |
+| Seeded Random Replay | 0H / 8M | 0H / 8M | 0H / 8M |
+
+每条 lane 持续验证 `Hits + Misses = Accesses` 和 `Invalid Fills + Evictions = Misses`；比较层验证 `All Agree + Outcome Divergence = Accesses`。current trace leader 只描述当前有限 trace，不代表策略普遍最优。
+
 ## 当前质量基线
 
-- 370 项 `unittest` 全部通过，无 skip。
+- 477 项 `unittest` 全部通过，无 skip。
 - M0 的 CLI、GUI、页面懒加载和 V2 兼容行为继续由回归测试覆盖。
 - Miss Type Lab 的三组 preset、双 Cache、Evidence、Statistics、Timeline 和页面状态保持已完成 smoke 与人工视觉验收。
 - Locality Lab 的六组 preset、Evidence、Cache、Block Map、Statistics、Timeline、平台导航与状态保持已完成 Qt smoke 和用户人工视觉验收。
+- Policy Lab 的七组 preset、三策略决策证据、Cache、Divergence、Statistics、Timeline、平台导航与状态保持已完成 Qt smoke、真实 GUI 启动和用户人工视觉验收。
 
-下一阶段为 M3 Policy Lab，仍按“纯逻辑 → `unittest` → GUI”的顺序推进。
+下一阶段为 M4 Performance Lab，仍按“纯逻辑 → `unittest` → GUI”的顺序推进。

@@ -41,19 +41,33 @@
 - Locality Lab 当前状态为 Available。
 - M2 完成时回归基线为 370 项测试，Qt smoke 与用户人工视觉验收通过。
 
-## M3：Policy Lab（下一阶段）
+## M3：Policy Lab（已完成）
 
-- 按“纯逻辑 → `unittest` → GUI”顺序研究和展示 replacement policy 行为。
-- 当前尚未实现，不在 M2 文档中声明任何功能行为。
+1. M3.1：实现纯 Python 的 replacement policy 同步比较核心、决策证据、独立 seeded Random stream 和七个教学 preset。
+2. M3.2：实现 Controller、Page State、Cache/Decision/Statistics/Timeline/Divergence view model。
+3. M3.3：实现独立 Policy Widget，并接入 Home、Sidebar、Registry 和 Main Window 页面缓存。
+
+- 同一配置与 trace 同步比较 LRU、FIFO 和 seeded Random。
+- 正式区分 HIT、INVALID_FILL 和 EVICTION；只有 full-set miss 才触发 replacement。
+- 展示 last_used、insert_time、Random candidates、victim/state/outcome divergence 和完整因果链。
+- 历史 Timeline 选择只更新 Selected Decision Evidence，不回滚最新 Cache、Statistics、Divergence 或 Random stream。
+- 七个 preset 覆盖无替换压力、victim 先于 outcome 分叉、LRU/FIFO 有限 trace 优势、set-local pressure、direct-mapped control 和 seeded replay。
+- Policy Lab 当前状态为 Available。
+- M3 完成时回归基线为 477 项测试，Qt smoke、真实 GUI 启动与用户人工视觉验收通过。
+
+## M4：Performance Lab（下一阶段）
+
+- Performance Lab
+
+继续遵循“纯逻辑 → `unittest` → GUI”的开发顺序；当前尚未实现，不声明具体功能行为。
 
 ## 后续 Lab
 
-- Performance Lab
 - Write Policy Lab
 
 上述 Lab 当前均为规划项，尚未实现。
 
-当前仍未实现 Policy、Performance、Write Policy、L2、历史 Cache snapshot 回滚、动画、Locality 双实验同时对比引擎和报告导出扩展。
+当前仍未实现 Performance Lab、Write Policy Lab、L2、write-back 完整教学实验、历史 Cache snapshot 回滚、动画、多 trace 批量策略排名和报告导出扩展。
 
 ## 持续质量要求
 
