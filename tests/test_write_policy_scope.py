@@ -16,11 +16,16 @@ PACKAGE = ROOT / "src" / "cachevis_rv" / "labs" / "write_policy"
 
 
 class WritePolicyScopeTest(unittest.TestCase):
-    def test_package_has_exact_seven_module_set(self):
+    def test_package_has_exact_fifteen_module_set(self):
         self.assertEqual(
             {path.name for path in PACKAGE.glob("*.py")},
-            {"__init__.py", "model.py", "parser.py", "explainer.py",
-             "session.py", "traffic.py", "presets.py"},
+            {
+                "__init__.py", "model.py", "parser.py", "explainer.py",
+                "session.py", "traffic.py", "presets.py", "controller.py",
+                "page_state.py", "decision_view_model.py", "traffic_view_model.py",
+                "cache_view_model.py", "statistics_view_model.py",
+                "timeline_view_model.py", "comparison_view_model.py",
+            },
         )
 
     def test_package_is_pure_and_has_no_other_lab_wall_clock_or_gui_dependency(self):
