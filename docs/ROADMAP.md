@@ -67,12 +67,28 @@
 - Performance Lab 当前状态为 Available。
 - M4 完成时回归基线为 620 项测试，Qt smoke、真实 GUI 启动和用户人工视觉验收通过。
 
-## M5：Write Policy Lab（下一阶段）
+## M5：Write Policy Lab（已完成）
 
-- Write Policy Lab 当前仍为 Coming Soon，`factory=None`。
-- 继续遵循“纯逻辑 → `unittest` → GUI”的开发顺序。
+1. M5.0：扩展正式 Core 的 write-through/write-back、write-allocate/no-write-allocate、dirty line、bypass 与 dirty eviction 能力，同时保持默认行为兼容。
+2. M5.1：实现纯 Python parser、explainer、traffic model、four-lane comparison session 与七个教学 preset。
+3. M5.2：实现 Controller、Page State 与 decision/traffic/cache/statistics/timeline/comparison View Models。
+4. M5.3：实现独立 Write Policy Widget，并接入 Home、Sidebar、Registry 与 Main Window 通用 page cache。
+5. M5.4：完成产品、架构、决策、里程碑总结与 smoke checklist 文档封版。
 
-当前仍未实现实际 L2 Cache hierarchy simulator、inclusion/exclusion、write-back traffic、parallel lookup、pipeline CPI、energy model、hardware-derived hit-time model、动画和 performance report export。
+- 四条独立 lane 同步比较 WT+WA、WT+NWA、WB+WA、WB+NWA。
+- 展示 write hit/miss、allocation、bypass、dirty state、dirty eviction、runtime traffic 与 final dirty drain。
+- 历史 Timeline 选择只切换 evidence，不回滚当前 Cache、统计或运行位置。
+- 七个 preset 覆盖 read-only、resident repeated writes、allocate/bypass、dirty eviction、streaming stores、read-after-write reuse 与 mixed dirty conflict。
+- Write Policy Lab 当前状态为 Available。
+- M5 完成时回归基线为 720 项测试，Qt smoke、真实 GUI 启动和用户人工视觉验收通过。
+
+至此平台所有计划 Lab 均已 Available：Learn 6 个、Classic Tools 2 个，共 8 个；Coming Soon 为 0。V3 功能里程碑 M0–M5 全部完成。
+
+## 下一阶段：V3 Final Release Hardening
+
+后续可开展全平台回归、文案和布局统一、软件著作权材料准备、版本号与发布说明、最终截图与演示脚本，以及打包与发布候选验证。本次任务不开始这些工作。
+
+当前仍未实现实际 L2 Cache hierarchy simulator、store buffer、write combining、cache coherence、memory consistency、pipeline CPI、energy model、动画或专用报告导出扩展。
 
 ## 持续质量要求
 

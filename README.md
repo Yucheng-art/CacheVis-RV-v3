@@ -1,34 +1,36 @@
 # CacheVis-RV V3
 
-CacheVis-RV V3 是面向计算机组成与 RISC-V Cache 教学的多实验室交互式可视化平台。
-
-V3 已完成 M4 Performance Lab：在保持 V2 稳定行为以及 Miss Type、Locality、Policy 教学能力的基础上，提供显式时序假设下的 AMAT sweep、traffic、cycle decomposition 与 analytical L1/L2 教学页面。当前应用身份为 `CacheVis-RV V3.0`。
+CacheVis-RV V3 是面向计算机组成与 RISC-V Cache 教学的多实验室交互式可视化平台。当前应用身份为 `CacheVis-RV V3.0`，M0–M5 计划内功能里程碑已经完成。
 
 ## 版本定位
 
 - V1：软件著作权归档版，仅作只读参考。
-- V2：稳定的 Address Visualizer 版，仅作只读参考。
+- V2：稳定 Address Visualizer 版，仅作只读参考。
 - V3：采用 Sidebar、Home、Lab Registry 与 `QStackedWidget` 的多 Lab 平台版。
 
 ## 当前可用功能
 
-- Address Explorer
-- Miss Type Lab
-- Locality Lab
-- Policy Lab
-- Performance Lab
-- Single Experiment
-- Compare Experiment
+平台共有 8 个 Available Lab，Coming Soon 为 0。
 
-以下教学 Lab 仍为 Coming Soon，尚未实现：
+Learn：
 
-- Write Policy Lab
+1. Address Explorer
+2. Miss Type Lab
+3. Locality Lab
+4. Policy Lab
+5. Performance Lab
+6. Write Policy Lab
 
-Performance Lab 使用教学用显式 cycle 模型，而不是宿主机 Python wall-clock benchmark。页面提供六个单级 Cache sweep、可编辑 point、七种指标图表、selected point 细节、Hit Rate/AMAT reversal，以及独立的 analytical L1/L2 AMAT 分解。当前没有实际 L2 CacheSimulator、write-back traffic 或硬件自动推导的 hit-time 模型。
+Classic Tools：
 
-平台页面按需创建并缓存，切换页面不会丢失已创建 Lab 的状态。当前回归基线为 620 项 `unittest` 全部通过，无 skip；Qt smoke、真实 GUI 入口启动和用户人工视觉验收均已通过。
+7. Single Experiment
+8. Compare Experiment
 
-下一阶段为 M5 Write Policy Lab，继续遵循“纯逻辑 → `unittest` → GUI”的开发顺序。
+Write Policy Lab 同步比较 Write-Through / Write-Back 与 Write-Allocate / No-Write-Allocate 四种组合，展示 dirty line、dirty eviction，以及 block fill、immediate store、bypass 和 dirty write-back 的教学流量。页面明确区分 runtime traffic 与 final dirty drain；查看历史 evidence 不会回滚当前 Cache、统计或运行位置。
+
+平台页面按需创建并缓存，切换页面不会丢失已创建 Lab 的状态。当前回归基线为 720 项 `unittest` 全部通过、无 skip；Qt offscreen smoke、真实 GUI 入口启动、七个 Write Policy preset GUI smoke 和用户人工视觉验收均已通过。
+
+Write Policy Lab 不模拟 store buffer、write combining、coherence、memory consistency、实际 L2、pipeline CPI、energy model、动画或专用报告导出。当前 trace 的结果只适用于给定 Cache 配置和流量假设，不代表任一策略普遍最优。
 
 ## 文档
 
@@ -43,6 +45,8 @@ Performance Lab 使用教学用显式 cycle 模型，而不是宿主机 Python w
 - [M3 Policy Lab Smoke Checklist](docs/V3_M3_POLICY_LAB_SMOKE_CHECKLIST.md)
 - [M4 Performance Lab 总结](docs/V3_M4_PERFORMANCE_LAB_SUMMARY.md)
 - [M4 Performance Lab Smoke Checklist](docs/V3_M4_PERFORMANCE_LAB_SMOKE_CHECKLIST.md)
+- [M5 Write Policy Lab 总结](docs/V3_M5_WRITE_POLICY_LAB_SUMMARY.md)
+- [M5 Write Policy Lab Smoke Checklist](docs/V3_M5_WRITE_POLICY_LAB_SMOKE_CHECKLIST.md)
 - [项目交接上下文](docs/PROJECT_HANDOFF_CONTEXT.md)
 - [V2 继承计划](docs/V2_INHERITANCE_PLAN.md)
 - [路线图](docs/ROADMAP.md)

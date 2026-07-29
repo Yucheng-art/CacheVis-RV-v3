@@ -24,14 +24,11 @@ CacheVis-RV V3 是面向计算机组成与 RISC-V Cache 教学的多实验室交
 - Locality Lab
 - Policy Lab
 - Performance Lab
+- Write Policy Lab
 - Single Experiment
 - Compare Experiment
 
-仍为 Coming Soon：
-
-- Write Policy Lab
-
-Coming Soon 仅表示规划状态，不代表已有业务实现。
+当前 8 个 Lab 全部 Available，Coming Soon 为 0。
 
 ## 分层架构
 
@@ -187,11 +184,112 @@ L2 local miss rate 的分母是到达 L2 的访问；L2 global miss rate 的分�
 
 ## 当前质量基线
 
-- 620 项 `unittest` 全部通过，无 skip。
+- 720 项 `unittest` 全部通过，无 skip。
 - M0 的 CLI、GUI、页面懒加载和 V2 兼容行为继续由回归测试覆盖。
 - Miss Type Lab 的三组 preset、双 Cache、Evidence、Statistics、Timeline 和页面状态保持已完成 smoke 与人工视觉验收。
 - Locality Lab 的六组 preset、Evidence、Cache、Block Map、Statistics、Timeline、平台导航与状态保持已完成 Qt smoke 和用户人工视觉验收。
 - Policy Lab 的七组 preset、三策略决策证据、Cache、Divergence、Statistics、Timeline、平台导航与状态保持已完成 Qt smoke、真实 GUI 启动和用户人工视觉验收。
 - Performance Lab 的六组 sweep、七指标图表、selected point、tradeoff、analytical L1/L2、平台导航与状态保持已完成 Qt smoke、真实 GUI 启动和用户人工视觉验收。
+- Write Policy Lab 的七组 preset、四 lane decision/cache/traffic/statistics、historical evidence、timeline、平台导航与状态保持已完成 Qt smoke、真实 GUI 启动和用户人工视觉验收。
 
-下一阶段为 M5 Write Policy Lab，仍按“纯逻辑 → `unittest` → GUI”的顺序推进。
+M0–M5 功能里程碑已完成；下一阶段为 V3 Final Release Hardening，本次不包含该阶段工作。
+
+## M5 Write Policy Lab
+
+### 分层与调用边界
+
+M5 延续纯逻辑、应用状态与 GUI 分离的结构：
+
+- 正式 Core：`CacheConfig`、`CacheSimulator.access(address, operation)`、dirty line 和正式 `AccessResult` 证据。
+- M5.1 Domain：parser、explainer、traffic model、four-lane session 与 presets。
+- M5.2 Application：`WritePolicyController`、`WritePolicyPageState`、immutable View Models 与 historical selection。
+- M5.3 Presentation：`WritePolicyLabWidget`、controls、decision cards、cache panels、traffic comparison、statistics、timeline、divergence 与 comparison summary。
+
+```text
+WritePolicyLabWidget
+        ↓
+WritePolicyController
+        ↓
+WritePolicyComparisonSession
+        ├── WT + WA CacheSimulator
+        ├── WT + NWA CacheSimulator
+        ├── WB + WA CacheSimulator
+        └── WB + NWA CacheSimulator
+```
+
+四条 lane 使用独立 simulator，不从任一 lane 复制结果。正式 `CacheSimulator` 决定 Cache 行为，Explainer 只解释正式结果，Traffic model 根据正式事件计算教学流量；GUI 只消费 View Model，不直接访问 `CacheSimulator`，也不重新实现策略语义。
+
+### Core 写策略契约
+
+`CacheConfig` 默认 `write_policy="write-through"`、`write_allocate=True`，正式支持 WT+WA、WT+NWA、WB+WA、WB+NWA。Write-Through write hit 保持 line clean 并立即向 lower memory 写 store；Write-Back write hit 将 line 标记为 dirty，不立即写 lower memory。
+
+Write miss + Write-Allocate 会分配 line 并产生 block fill：WT 新 line clean 且立即写 store，WB 新 line dirty 且不立即写 store。Write miss + No-Write-Allocate 是 MISS：不分配、不选择 victim、不改变 Cache state 或 replacement metadata，store 直接 bypass。Read miss 无论 `write_allocate` 为何都分配 clean line，并可驱逐 dirty victim。替换 dirty valid line 会产生整个 block 的 write-back。
+
+正式 `AccessResult` 提供 `allocated`、`bypassed`、`hit_way`、`fill_way`、`evicted_way`、`victim_tag`、`victim_dirty`、`line_dirty_before` 和 `line_dirty_after`。实际 eviction 以 `evicted_way` 为准；`victim_way` 仅为旧兼容字段。victim tag/dirty 在覆盖前取得，invalid fill 不报告真实 victim，bypass 不含 hit/fill/eviction way，结果也不暴露 `CacheLine`。
+
+### 四 lane、decision 与 trace
+
+固定 lane 顺序为 `wt_wa`、`wt_nwa`、`wb_wa`、`wb_nwa`。正式 decision kind 只有：`READ_HIT`、`READ_MISS_FILL`、`WRITE_HIT_THROUGH`、`WRITE_HIT_BACK`、`WRITE_MISS_ALLOCATE_THROUGH`、`WRITE_MISS_ALLOCATE_BACK`、`WRITE_MISS_BYPASS`；不存在 UNKNOWN/OTHER，dirty eviction 是附带事件，不替代主 decision。
+
+Trace parser 接受逐行或逗号分隔的 `R 0`、`W 4`、`R 0x10`、`W 0x20`，操作符大小写均可，也接受 `R:0` / `W:0x10`；空文本是正式空 trace。裸地址、未知操作、缺地址、非法或负地址、额外字段及连续逗号形成的空项均拒绝。
+
+### Traffic 与 final drain
+
+`WriteTrafficAssumptions.store_size_bytes` 必须为正整数且不大于 block size；store 不得跨 block。模型不支持 partial dirty-byte mask，也不自动拆分跨 block write。
+
+```text
+block_fill_bytes = block_fills × block_size_bytes
+immediate_store_bytes = immediate_store_writes × store_size_bytes
+bypass_write_bytes = bypass_writes × store_size_bytes
+dirty_writeback_bytes = dirty_writebacks × block_size_bytes
+
+memory_read_transactions = block_fills
+memory_read_bytes = block_fill_bytes
+memory_write_transactions = immediate_store_writes + bypass_writes + dirty_writebacks
+memory_write_bytes = immediate_store_bytes + bypass_write_bytes + dirty_writeback_bytes
+total_lower_memory_transactions = memory_read_transactions + memory_write_transactions
+total_lower_memory_bytes = memory_read_bytes + memory_write_bytes
+```
+
+这些 lower-memory traffic 均为教学分析值，不是宿主机真实 I/O。运行结束时，`final_dirty_lines` 是仍 valid 且 dirty 的 resident line 数，`final_dirty_bytes = final_dirty_lines × block_size_bytes`。`memory_write_bytes_with_final_drain = memory_write_bytes + final_dirty_bytes`，`total_lower_memory_bytes_with_final_drain = total_lower_memory_bytes + final_dirty_bytes`。Final drain 只是非变异分析值，不是 trace step、不调用 flush、不修改 Cache，也不会重复计算已被 eviction 写回的 line；runtime 与 including-final-drain 必须分开。
+
+### 不变量与 divergence
+
+每条 lane 持续满足：
+
+```text
+accesses = reads + writes
+hits + misses = accesses
+read_hits + read_misses = reads
+write_hits + write_misses = writes
+write_miss_allocations + write_miss_bypasses = write_misses
+block_fills = read_misses + write_miss_allocations
+dirty_writebacks = dirty_evictions
+memory_read_bytes = block_fills × block_size_bytes
+memory_write_bytes = immediate_store_writes × store_size_bytes
+                   + bypass_writes × store_size_bytes
+                   + dirty_writebacks × block_size_bytes
+total_lower_memory_bytes = memory_read_bytes + memory_write_bytes
+final_dirty_bytes = final_dirty_lines × block_size_bytes
+total_lower_memory_bytes_with_final_drain = total_lower_memory_bytes + final_dirty_bytes
+```
+
+比较层满足 `all_outcomes_agree_steps + outcome_divergence_steps = accesses`。七类 divergence 分别比较：四 lane HIT/MISS outcome、allocation、bypass、当前步骤 dirty writeback、当前步骤 lower-memory total bytes、每个位置的 `valid and dirty`，以及包括 valid/tag/dirty/last_used/insert_time 的完整 snapshot。Dirty-state divergence 不等于 full cache-state divergence，后者也不只是比较 tag 集合。
+
+### 历史选择与当前状态
+
+Selected Historical Evidence 展示 selected step 的 access、四 lane decisions、traffic delta 与 divergence flags。Current Run State 始终展示最新 Session Cache、累计 statistics、final dirty state、`next_step_index` 与完整 timeline。
+
+选择历史 step 只改变 `selected_step_index`、`selected_step`、selected decisions 和 timeline selected 标记；不会改变 `latest_step_index`、`next_step_index`、completion、current Cache、current statistics、final dirty state、divergence counts 或 comparison summary。页面明确提示：`Viewing historical evidence; cache and statistics remain at the latest run state.`
+
+### Presentation 与平台
+
+页面由 Experiment Controls、Teaching Summary、Current Access and Run Position、Divergence Summary、Selected Historical Decision Cards、Current Four-Lane Cache State、Runtime / Final Drain Traffic Comparison、Current Cumulative Statistics、Timeline 和 Policy Comparison Summary 组成。整体采用纵向 `QScrollArea`，四 lane Cache 为 2×2；宽表格与 timeline 支持横向滚动。Traffic Canvas 使用 QWidget + QPainter，不引入 matplotlib、numpy、pandas 或 QtCharts；精确数字表与图形并存，状态不只依赖颜色表达。
+
+Comparison Summary 支持 runtime / with-drain 最低流量 lane、最高 hit-rate lane、tie、两种 leader 是否一致，以及 allocation 对 future outcome、propagation 对 dirty state/runtime traffic、dirty eviction、bypass、actual observations 和 caution note。固定提示为：`Results apply only to the current trace, cache configuration, and traffic assumptions.`
+
+平台当前为 Learn 6 个（Address Explorer、Miss Type、Locality、Policy、Performance、Write Policy）加 Classic Tools 2 个（Single Experiment、Compare Experiment），共 8 Available、0 Coming Soon。Home、Sidebar、Registry 与 Main Window 通用 lazy page cache 正常；Write Policy 首次导航延迟创建，再次导航复用实例并保持 experiment、timeline、selection、Cache 与 statistics，Main Window 没有 Write Policy 专用 if/elif。
+
+### 明确未实现
+
+当前未实现 store buffer、write combining、partial dirty-byte mask、跨 block store 拆分、atomic operations、cache coherence、memory consistency、non-temporal stores、实际 lower-memory latency、pipeline CPI、L2 Cache hierarchy、prefetch、energy model、animation、Write Policy 专用报告导出或实际硬件实现。

@@ -149,3 +149,69 @@
 - 状态：已决定
 - 决策：M4.3 完成后 Performance Lab 状态改为 Available，由 Registry factory 延迟创建并由 Main Window 通用 page cache 复用；Write Policy 继续为 Coming Soon 且 `factory=None`。
 - 原因：保持平台扩展与状态缓存机制一致，不向 Main Window 添加 Performance 专用分支。
+
+## D-026：Core 拥有 write-policy 语义
+
+- 状态：已决定
+- 决策：write-through/write-back、write-allocate/no-write-allocate、dirty marking、bypass 与 dirty eviction 均由正式 `CacheSimulator` 决定。
+- 原因：避免 Lab、GUI 或教学解释层复制并分叉 Cache 行为。
+
+## D-027：Explainer 只解释正式 AccessResult
+
+- 状态：已决定
+- 决策：Write Policy Explainer 只消费正式 `AccessResult`，不重算 hit、allocation、bypass、victim 或 dirty transition。
+- 原因：让教学证据与实际模拟结果保持同一事实来源。
+
+## D-028：实际 eviction 以 evicted_way 为准
+
+- 状态：已决定
+- 决策：M5 使用 `evicted_way` 表示实际被覆盖的 way；`victim_way` 只保留旧调用兼容用途，不作为 Lab eviction 证据。
+- 原因：区分候选 victim 与确实发生的 eviction，并避免 invalid fill 或 bypass 被误报为替换。
+
+## D-029：Runtime traffic 与 final dirty drain 分开
+
+- 状态：已决定
+- 决策：运行期间 block fill、immediate store、bypass、dirty write-back 与运行结束时 resident dirty data 的分析值分别报告。
+- 原因：避免把尚未写回的数据误计入 runtime，也避免在 workload 结束比较中忽略 Write-Back 留存的脏数据。
+
+## D-030：Final drain 是非变异分析值
+
+- 状态：已决定
+- 决策：final drain 不修改 Cache、不调用 flush，也不构成 trace step；它仅由运行结束时 valid 且 dirty 的 resident line 计算。
+- 原因：保持 Timeline、step count、Cache state 与正式 trace 语义不变。
+
+## D-031：四 lane 使用独立 CacheSimulator
+
+- 状态：已决定
+- 决策：WT+WA、WT+NWA、WB+WA、WB+NWA 各自拥有独立 simulator，同步消费相同 trace，不从一条 lane 复制另一条结果。
+- 原因：每种策略组合必须保有独立 Cache、replacement metadata 与 dirty state，才能观察后续 outcome divergence。
+
+## D-032：No-Write-Allocate bypass 不触发 victim selection
+
+- 状态：已决定
+- 决策：NWA write miss 是 MISS，但不分配、不选择 victim，也不改变 resident Cache state 或 replacement metadata；store 直接 bypass 到 lower memory。
+- 原因：这是 no-write-allocate 的正式语义，也是 allocation 与 future reuse 对比的基础。
+
+## D-033：历史选择不回滚当前运行状态
+
+- 状态：已决定
+- 决策：选择历史 Timeline step 只切换 access、decision、traffic delta 与 divergence evidence；current Cache、statistics、final dirty state 和运行位置保持最新。
+- 原因：当前实现保存历史证据而非每一步完整可恢复 session，明确区分审阅与回滚可避免误导。
+
+## D-034：Dirty-state divergence 与 full cache-state divergence 分开
+
+- 状态：已决定
+- 决策：dirty-state 仅比较每个位置的 valid/dirty；full cache-state 比较 valid、tag、dirty、last_used 与 insert_time 的完整 snapshot。
+- 原因：传播策略可以先改变脏位而不改变 tag，完整状态也可能因 metadata 不同而分叉，两种现象具有不同教学含义。
+
+## D-035：Write Policy GUI 不包含 Random replacement
+
+- 状态：已决定
+- 决策：Write Policy Lab 固定使用确定性的 replacement 配置，不在四 lane GUI 中加入 Random。
+- 原因：避免 replacement randomness 与 write-policy 差异混杂；Random 的教学比较由 Policy Lab 负责。
+
+## D-036：当前 trace 的最低流量不代表普遍最优
+
+- 状态：已决定
+- 决策：所有 leader 支持 tie，并固定提示结果仅适用于当前 trace、Cache 配置与 traffic assumptions，不宣称任一策略普遍最优。
+- 原因：流量、hit rate 与 final dirty data 均依赖 workload 和模型假设，有限 trace 不能建立普适排序。
