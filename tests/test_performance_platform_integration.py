@@ -29,7 +29,7 @@ class PerformancePlatformIntegrationTest(unittest.TestCase):
         performance = get_lab("performance")
         self.assertEqual(AVAILABLE, performance.status)
         self.assertTrue(callable(performance.factory))
-        self.assertEqual(7, len(get_available_labs()))
+        self.assertEqual(8, len(get_available_labs()))
         self.assertIsNone(self.window.page_for("performance"))
         action = self.window.home_page._action_buttons["performance"]
         self.assertTrue(action.isEnabled())
@@ -37,8 +37,8 @@ class PerformancePlatformIntegrationTest(unittest.TestCase):
         learn = [lab_id for lab_id in self.window.sidebar._buttons if lab_id in {"address_explorer", "miss_type", "locality", "policy", "performance"}]
         self.assertEqual(["address_explorer", "miss_type", "locality", "policy", "performance"], learn)
         future = get_lab("write_policy")
-        self.assertEqual(COMING_SOON, future.status)
-        self.assertIsNone(future.factory)
+        self.assertEqual(AVAILABLE, future.status)
+        self.assertTrue(callable(future.factory))
 
     def test_home_navigation_is_lazy_and_reuses_stateful_page(self):
         self.assertTrue(self.window.home_page.request_lab("performance"))
@@ -53,7 +53,7 @@ class PerformancePlatformIntegrationTest(unittest.TestCase):
         self.assertIs(page, self.window.page_for("performance"))
         self.assertIs(state, page.controller.state)
 
-    def test_sidebar_creates_same_cached_page_and_write_policy_does_not(self):
+    def test_sidebar_creates_same_cached_pages_including_write_policy(self):
         self.window.sidebar._buttons["performance"].click()
         self.app.processEvents()
         page = self.window.page_for("performance")
@@ -61,8 +61,8 @@ class PerformancePlatformIntegrationTest(unittest.TestCase):
         self.assertTrue(self.window.navigate_to("address_explorer"))
         self.assertTrue(self.window.navigate_to("performance"))
         self.assertIs(page, self.window.page_for("performance"))
-        self.assertFalse(self.window.navigate_to("write_policy"))
-        self.assertIsNone(self.window.page_for("write_policy"))
+        self.assertTrue(self.window.navigate_to("write_policy"))
+        self.assertIsNotNone(self.window.page_for("write_policy"))
 
 
 if __name__ == "__main__":

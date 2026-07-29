@@ -54,6 +54,12 @@ def _create_performance():
     return PerformanceLabWidget()
 
 
+def _create_write_policy():
+    from cachevis_rv.labs.write_policy.widget import WritePolicyLabWidget
+
+    return WritePolicyLabWidget()
+
+
 def _create_single_experiment():
     from cachevis_rv.labs.single_experiment import SingleExperimentWidget
 
@@ -128,9 +134,9 @@ LAB_REGISTRY = (
         short_title="Write Policy",
         description="Study write-through, write-back, allocation, and dirty data.",
         category="Learn",
-        status=COMING_SOON,
+        status=AVAILABLE,
         concepts=("Write-through", "Write-back"),
-        factory=None,
+        factory=_create_write_policy,
         order=60,
     ),
     LabDefinition(

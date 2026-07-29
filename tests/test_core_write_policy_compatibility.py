@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 from cachevis_rv.core import CacheConfig, CacheSimulator
-from cachevis_rv.gui.lab_registry import COMING_SOON, get_lab
+from cachevis_rv.gui.lab_registry import AVAILABLE, get_lab
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,10 +43,10 @@ class CoreWritePolicyCompatibilityTest(unittest.TestCase):
                     self.assertEqual(first, second)
                     self.assertEqual(first_snapshot, cache.get_cache_snapshot())
 
-    def test_write_policy_registry_contract_is_unchanged(self):
+    def test_write_policy_registry_reflects_gui_product_activation(self):
         lab = get_lab("write_policy")
-        self.assertEqual(lab.status, COMING_SOON)
-        self.assertIsNone(lab.factory)
+        self.assertEqual(lab.status, AVAILABLE)
+        self.assertTrue(callable(lab.factory))
 
     def test_core_has_no_gui_third_party_or_wall_clock_dependency(self):
         for path in (ROOT / "src" / "cachevis_rv" / "core").glob("*.py"):

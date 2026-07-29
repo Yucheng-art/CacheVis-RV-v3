@@ -8,28 +8,29 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from cachevis_rv.gui.lab_registry import COMING_SOON, get_lab
+from cachevis_rv.gui.lab_registry import AVAILABLE, get_lab
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "src" / "cachevis_rv" / "labs" / "write_policy"
+PURE_MODULES = {
+    "__init__.py", "model.py", "parser.py", "explainer.py", "session.py",
+    "traffic.py", "presets.py", "controller.py", "page_state.py",
+    "decision_view_model.py", "traffic_view_model.py", "cache_view_model.py",
+    "statistics_view_model.py", "timeline_view_model.py", "comparison_view_model.py",
+}
 
 
 class WritePolicyScopeTest(unittest.TestCase):
     def test_package_has_exact_fifteen_module_set(self):
         self.assertEqual(
-            {path.name for path in PACKAGE.glob("*.py")},
-            {
-                "__init__.py", "model.py", "parser.py", "explainer.py",
-                "session.py", "traffic.py", "presets.py", "controller.py",
-                "page_state.py", "decision_view_model.py", "traffic_view_model.py",
-                "cache_view_model.py", "statistics_view_model.py",
-                "timeline_view_model.py", "comparison_view_model.py",
-            },
+            {path.name for path in PACKAGE.glob("*.py") if path.name != "widget.py"},
+            PURE_MODULES,
         )
 
     def test_package_is_pure_and_has_no_other_lab_wall_clock_or_gui_dependency(self):
-        for path in PACKAGE.glob("*.py"):
+        for name in PURE_MODULES:
+            path = PACKAGE / name
             source = path.read_text(encoding="utf-8")
             tree = ast.parse(source)
             self.assertNotIn("PySide6", source)
@@ -55,10 +56,10 @@ class WritePolicyScopeTest(unittest.TestCase):
         self.assertNotIn("victim_way", source + explainer)
         self.assertIn('access_result["evicted_way"]', explainer)
 
-    def test_write_policy_lab_remains_coming_soon_without_factory(self):
+    def test_write_policy_lab_is_available_with_lazy_factory(self):
         lab = get_lab("write_policy")
-        self.assertEqual(lab.status, COMING_SOON)
-        self.assertIsNone(lab.factory)
+        self.assertEqual(lab.status, AVAILABLE)
+        self.assertTrue(callable(lab.factory))
 
 
 if __name__ == "__main__":

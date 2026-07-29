@@ -39,13 +39,13 @@ class HomePageMetadataTest(unittest.TestCase):
         self.assertEqual(statuses["performance"], AVAILABLE)
         self.assertEqual(statuses["single_experiment"], AVAILABLE)
         self.assertEqual(statuses["compare_experiment"], AVAILABLE)
-        self.assertEqual(statuses["write_policy"], COMING_SOON)
+        self.assertEqual(statuses["write_policy"], AVAILABLE)
 
-    def test_coming_soon_cards_cannot_create_or_navigate_to_pages(self):
+    def test_empty_coming_soon_set_and_generic_guards_are_stable(self):
         future = [lab for lab in get_labs() if lab.status == COMING_SOON]
 
-        self.assertTrue(future)
-        self.assertTrue(all(lab.factory is None for lab in future))
+        self.assertEqual(future, [])
+        self.assertTrue(callable(get_lab("write_policy").factory))
         source = (
             Path(__file__).resolve().parents[1]
             / "src"

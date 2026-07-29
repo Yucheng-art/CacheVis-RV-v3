@@ -61,12 +61,12 @@ class LocalityPlatformIntegrationTest(unittest.TestCase):
         self.assertTrue(self.window.navigate_to("locality"))
         self.assertIs(self.window.page_for("locality"), page)
 
-    def test_only_write_policy_remains_unavailable(self):
+    def test_write_policy_is_now_available(self):
         lab = get_lab("write_policy")
-        self.assertEqual(lab.status, COMING_SOON)
-        self.assertIsNone(lab.factory)
-        self.assertFalse(self.window.navigate_to("write_policy"))
-        self.assertIsNone(self.window.page_for("write_policy"))
+        self.assertEqual(lab.status, AVAILABLE)
+        self.assertTrue(callable(lab.factory))
+        self.assertTrue(self.window.navigate_to("write_policy"))
+        self.assertIsNotNone(self.window.page_for("write_policy"))
 
 
 if __name__ == "__main__":
